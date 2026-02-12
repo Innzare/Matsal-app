@@ -17,6 +17,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MenuSectionsList from '@/components/MenuSectionsList';
+import { useCartStore } from '@/store/useCartStore';
+import { useGlobalModalStore } from '@/store/useGlobalModalStore';
+import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
 
 const SECTIONS = [
   {
@@ -406,6 +410,10 @@ export default function Restaurant() {
   const isAutoScrolling = useRef(false);
 
   const { openGlobalBottomSheet, closeGlobalBottomSheet } = useBottomSheetStore();
+  const { carts, setActiveRestaurant } = useCartStore();
+  const { openGlobalModal } = useGlobalModalStore();
+  const { favoriteRestaurants, toggleFavorite } = useFavoritesStore();
+  const isFavorite = favoriteRestaurants.includes(Number(id));
   // const isScrolledUp = useSharedValue(true);
 
   const isAndroid = Platform.OS === 'android';
@@ -468,7 +476,6 @@ export default function Restaurant() {
 
       if (y >= start && y < end) {
         current = i;
-        // break;
       }
     }
 
@@ -521,7 +528,12 @@ export default function Restaurant() {
   const HEADER_IMAGE_HEIGHT = wHeight / 4;
 
   const headerImageStyle = useAnimatedStyle(() => {
-    const height = interpolate(scrollY.value, [100, 0], [HEADER_IMAGE_HEIGHT - 100, HEADER_IMAGE_HEIGHT]);
+    const height = interpolate(
+      scrollY.value,
+      [-100, 0, 100],
+      [HEADER_IMAGE_HEIGHT + 100, HEADER_IMAGE_HEIGHT, HEADER_IMAGE_HEIGHT - 120],
+      Extrapolation.CLAMP
+    );
 
     return {
       height
@@ -618,7 +630,11 @@ export default function Restaurant() {
   };
 
   const onMenuItemPress = (item: any) => {
-    openGlobalBottomSheet({ content: <MenuItemContent item={item} />, snaps: ['85%'], isBackgroundScalable: true });
+    openGlobalBottomSheet({
+      content: <MenuItemContent item={item} restaurantId={String(id)} restaurantName={currentRestaurant?.name || ''} />,
+      snaps: ['85%'],
+      isBackgroundScalable: true
+    });
   };
 
   const renderMenuItems = (section: any) => {
@@ -653,9 +669,9 @@ export default function Restaurant() {
                     </View>
 
                     <View className="items-start px-1">
-                      <Text className="font-bold mb-2">{item.name}</Text>
-                      <Text className="font-bold text-sm text-emerald-700 rounded-md px-2 p-1 pb-0.5 bg-stone-200">
-                        {item.price} р.
+                      <Text className="font-bold mb-1">{item.name}</Text>
+                      <Text className="font-bold text-sm" style={{ color: '#EA004B' }}>
+                        {item.price} ₽
                       </Text>
                     </View>
                   </Pressable>
@@ -693,10 +709,10 @@ export default function Restaurant() {
                     />
                   </View>
 
-                  <View className="items-start px-1 gap-1 mt-1">
+                  <View className="items-start px-1 gap-0.5 mt-1">
                     <Text className="font-bold text-lg">{item.name}</Text>
-                    <Text className=" font-bold text-sm text-emerald-700 rounded-md px-2 p-1 pb-0.5 bg-stone-200">
-                      {item.price} р.
+                    <Text className="font-bold text-sm" style={{ color: '#EA004B' }}>
+                      {item.price} ₽
                     </Text>
                   </View>
                 </Pressable>
@@ -718,8 +734,8 @@ export default function Restaurant() {
                     {item.description}
                   </Text>
 
-                  <Text className="font-bold text-sm bg-stone-200 p-1 px-2 rounded-md text-emerald-700">
-                    {item.price} р.
+                  <Text className="font-bold text-sm" style={{ color: '#EA004B' }}>
+                    {item.price} ₽
                   </Text>
                 </View>
 
@@ -763,27 +779,33 @@ export default function Restaurant() {
           magni aliquam.
         </Text>
 
-        <View className="flex-row justify-between items-center w-full mt-6">
+        <View className="flex-row gap-3 w-full mt-6">
           <Pressable
             onPress={onReviewsPress}
-            className="bg-stone-100 p-2 px-3 pb-1.5 rounded-lg flex-row items-center gap-2 border border-stone-200"
+            className="flex-1 bg-white border border-stone-300 rounded-xl p-3 items-center justify-between"
           >
-            <Icon set="ant" name="star" size={14} color="red" />
-
-            <Text className="font-bold text-sm mt-0.5">4.5 - (100+ Отзывов)</Text>
+            <View className="flex-row items-center gap-2">
+              <Icon set="ant" name="star" size={20} color="#f59e0b" />
+              <Text className="text-xl font-bold">4.5</Text>
+            </View>
+            <Text className="text-stone-500 text-sm">100+ отзывов</Text>
           </Pressable>
 
-          <TouchableOpacity
+          <Pressable
             onPress={onAboutRestaurantPress}
-            className="bg-stone-100 p-2 px-3 pb-1.5 rounded-lg flex-row items-center gap-2 border border-stone-200"
+            className="flex-1 bg-white border border-stone-300 rounded-xl p-3 items-center justify-between"
           >
-            <Text className="font-bold text-sm">Подробнее</Text>
+            <Icon set="feather" name="info" size={20} color="#EA004B" />
+            <Text className="text-stone-500 text-sm">О ресторане</Text>
+          </Pressable>
 
-            <Icon set="ion" name="information-circle-outline" size={18} />
-          </TouchableOpacity>
+          <Pressable className="flex-1 bg-white border border-stone-300 rounded-xl p-3 items-center justify-between">
+            <Icon set="feather" name="share-2" size={20} color="#EA004B" />
+            <Text className="text-stone-500 text-sm">Поделиться</Text>
+          </Pressable>
         </View>
 
-        <View className="mt-6 p-4 py-6 border border-stone-300 rounded-xl w-full items-center flex-row gap-6">
+        <View className="mt-3 p-4 py-6 border border-stone-300 rounded-xl w-full items-center flex-row gap-6">
           <Pressable
             onPress={onChangeDeliveryTypePress}
             className="p-0.5 border border-stone-300 rounded-full flex-row bg-stone-200"
@@ -900,7 +922,7 @@ export default function Restaurant() {
   return (
     <View className="relative flex-1 bg-white">
       <Animated.View
-        style={[headerImageStyle, { backgroundColor: '#ea004b' }]}
+        style={[headerImageStyle, { backgroundColor: '#d6d3d1' }]}
         className="w-full absolute top-0 left-0 z-30 min-h-[120px]"
       >
         {/* <AnimatedImage
@@ -930,22 +952,22 @@ export default function Restaurant() {
           contentFit="cover"
         />
 
-        <Animated.View
+        <View
           className="absolute top-0 left-0 w-full z-10 flex-row items-center justify-between px-4 mt-4 gap-4"
           style={[{ paddingTop: insets.top }]}
         >
           <TouchableOpacity
             onPress={onGoBackPress}
-            className="bg-white rounded-full p-1 w-[30px] h-[30px] items-center justify-center"
+            className="bg-white rounded-full p-1 w-[40px] h-[40px] items-center justify-center"
           >
             <Icon set="feather" name="arrow-left" size={19} />
           </TouchableOpacity>
 
           <Animated.View
-            className="pl-2 bg-white border border-stone-200 flex-1 flex-row items-center gap-3 rounded-full"
+            className="pl-2 py-1 bg-white flex-1 flex-row items-center gap-3 rounded-full"
             style={[headerSearchInputStyle]}
           >
-            <Icon set="feather" name="search" size={18} />
+            <Icon set="feather" name="search" size={21} />
             <TextInput
               placeholderTextColor="#777777"
               placeholder={`Поиск в меню ${currentRestaurant?.name}`}
@@ -953,29 +975,18 @@ export default function Restaurant() {
             />
           </Animated.View>
 
-          <View className="flex-row gap-2">
-            <TouchableOpacity
-              onPress={onGoBackPress}
-              className="bg-white rounded-full p-1 w-[30px] h-[30px] items-center justify-center"
-            >
-              <Icon set="feather" name="share" size={18} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={onAboutRestaurantPress}
-              className="bg-white rounded-full p-1 w-[30px] h-[30px] items-center justify-center"
-            >
-              <Icon set="ion" name="information-circle-outline" size={24} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={onGoBackPress}
-              className="bg-white rounded-full p-1 w-[30px] h-[30px] items-center justify-center pt-1.5"
-            >
-              <Icon set="ion" name="heart-outline" size={20} />
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+          <TouchableOpacity
+            onPress={() => toggleFavorite(Number(id))}
+            className="bg-white rounded-full p-1 w-[40px] h-[40px] items-center justify-center pt-1.5"
+          >
+            <Icon
+              set="ion"
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={24}
+              color={isFavorite ? 'red' : '#000'}
+            />
+          </TouchableOpacity>
+        </View>
 
         <Animated.View
           className="absolute bottom-0 left-[50%] translate-y-[20%] -translate-x-[50%] w-[50px] h-[50px] bg-stone-300 rounded-lg justify-center items-center z-20"
@@ -1030,6 +1041,41 @@ export default function Restaurant() {
         className="pt-[105px]"
         contentContainerStyle={{ flexGrow: 1 }}
       />
+
+      {/* Кнопка корзины */}
+      {(() => {
+        const cart = carts[String(id)];
+        if (!cart || cart.items.length === 0) return null;
+        const cartItemsCount = cart.items.reduce((sum, i) => sum + i.quantity, 0);
+        const cartTotal = cart.items.reduce((sum, i) => {
+          const modTotal = i.modifiers.reduce((s, m) => s + m.price, 0);
+          return sum + (i.price + modTotal) * i.quantity;
+        }, 0);
+        return (
+          <Animated.View
+            className="absolute left-0 bottom-0 right-0 px-5 pt-2 bg-white border-t border-stone-200 z-30"
+            style={{ paddingBottom: insets.bottom + 10 }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => {
+                setActiveRestaurant(String(id));
+                openGlobalModal(GLOBAL_MODAL_CONTENT.CART);
+              }}
+              className="flex-row items-center justify-between h-[56px] rounded-2xl px-5"
+              style={{ backgroundColor: '#EA004B', borderCurve: 'continuous' }}
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center">
+                  <Text className="text-white font-bold text-sm">{cartItemsCount}</Text>
+                </View>
+                <Text className="text-white font-bold text-base">Открыть корзину</Text>
+              </View>
+              <Text className="text-white font-bold text-base">{cartTotal} ₽</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        );
+      })()}
 
       {/* <ScrollView
         ref={scrollRef}

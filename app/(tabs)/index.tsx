@@ -9,10 +9,12 @@ import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
 import { CATEGORIES, POPULAR_BRANDS, RESTAURANTS, RESTAURANTS2 } from '@/constants/resources';
 import { useBottomSheetStore } from '@/store/useBottomSheetStore';
 import { useGlobalModalStore } from '@/store/useGlobalModalStore';
+import { useOrdersStore } from '@/store/useOrdersStore';
+import { useNotificationsStore } from '@/store/useNotificationsStore';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Platform,
@@ -20,6 +22,7 @@ import {
   RefreshControl,
   ScrollView,
   StatusBar,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
   View
@@ -35,6 +38,7 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
+  withRepeat,
   withTiming
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -44,6 +48,8 @@ import Food from '@/components/Food';
 import Addresses from '@/components/GlobalModal/Addresses';
 import { TopTabs } from '@/components/top-tabs';
 import { useAddressesStore } from '@/store/useAddressesStore';
+import { Skeleton } from '@/components/Skeleton';
+import PromoBanner from '@/components/PromoBanner';
 
 const HEADER_MAX_HEIGHT = 120;
 const HEADER_MIN_HEIGHT = 70;
@@ -75,6 +81,21 @@ export default function SearchScreen() {
 
   const { openGlobalModal } = useGlobalModalStore();
   const { openGlobalBottomSheet } = useBottomSheetStore();
+  const { activeOrdersCount } = useOrdersStore();
+  const { unreadCount } = useNotificationsStore();
+
+  const rippleProgress = useSharedValue(0);
+  useEffect(() => {
+    if (activeOrdersCount > 0) {
+      rippleProgress.value = withRepeat(withTiming(1, { duration: 1500 }), -1, false);
+    } else {
+      rippleProgress.value = 0;
+    }
+  }, [activeOrdersCount]);
+  const rippleStyle = useAnimatedStyle(() => ({
+    opacity: 1 - rippleProgress.value,
+    transform: [{ scale: 1 + rippleProgress.value * 2.5 }],
+  }));
   const { getActiveAddress } = useAddressesStore();
   const activeAddress = getActiveAddress();
 
@@ -88,7 +109,7 @@ export default function SearchScreen() {
   const addressOpacity = useSharedValue(1);
 
   // const [isScrollEnabled, setIsScrollEnabled] = useState(false);
-  const isScrollViewMinPosition = useSharedValue(false);
+  const isScrollViewMinPosition = useSharedValue(true);
   // const [isScrolledUp, setIsScrolledUp] = useState(false);
   const isScrolledUp = useSharedValue(true);
   // const [isScrollEnd, setIsScrollEnd] = useState(false);
@@ -98,6 +119,7 @@ export default function SearchScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const insets = useSafeAreaInsets();
 
@@ -110,6 +132,16 @@ export default function SearchScreen() {
 
   // const SCROLL_MIN = 0;
   const SCROLL_MAX = 250;
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -371,6 +403,7 @@ export default function SearchScreen() {
 
   const CONTENT_SECTION = {
     FOOD_TYPE: 'FOOD_TYPE',
+    PROMO_BANNER: 'PROMO_BANNER',
     CATEGORIES: 'CATEGORIES',
     ORDER_AGAIN: 'ORDER_AGAIN',
     POPULAR_BRANDS: 'POPULAR_BRANDS',
@@ -384,6 +417,7 @@ export default function SearchScreen() {
       ? [
           CONTENT_SECTION.FOOD_TYPE,
           CONTENT_SECTION.CATEGORIES,
+          CONTENT_SECTION.PROMO_BANNER,
           CONTENT_SECTION.ORDER_AGAIN,
           CONTENT_SECTION.POPULAR_BRANDS,
           CONTENT_SECTION.NEAR,
@@ -451,7 +485,7 @@ export default function SearchScreen() {
     return (
       <View className="mt-5">
         <Categories activeCategoryId={activeCategoryId} onCategorySelect={onCategoryPress} />
-        <View className="py-1 bg-stone-100 my-8" />
+        <View className="py-1 bg-stone-100 my-6" />
       </View>
     );
   };
@@ -559,6 +593,10 @@ export default function SearchScreen() {
       // case CONTENT_SECTION.FOOD_TYPE:
       //   return renderFoodTypeSection();
 
+      case CONTENT_SECTION.PROMO_BANNER:
+        content = <PromoBanner />;
+        break;
+
       case CONTENT_SECTION.CATEGORIES:
         content = renderCategoriesSection();
         break;
@@ -646,8 +684,26 @@ export default function SearchScreen() {
           </TouchableOpacity>
 
           <View className="flex-row gap-3">
+            <Pressable
+              className="w-10 h-10 rounded-full justify-center items-center"
+              onPress={() => openGlobalModal(GLOBAL_MODAL_CONTENT.ORDERS)}
+            >
+              <Icon set="ion" name="receipt-outline" size={22} color="white" />
+              {activeOrdersCount > 0 && (
+                <View className="absolute top-1 right-1 w-3 h-3 items-center justify-center">
+                  <Animated.View
+                    style={rippleStyle}
+                    className="absolute w-3 h-3 rounded-full bg-orange-500"
+                  />
+                  <View className="w-2.5 h-2.5 rounded-full bg-orange-500 border-[1.5px] border-white" />
+                </View>
+              )}
+            </Pressable>
             <Pressable className="w-10 h-10 rounded-full justify-center items-center" onPress={onNotificationsPress}>
               <Icon set="ion" name="notifications-outline" size={24} color="white" />
+              {unreadCount > 0 && (
+                <View className="absolute top-1 right-1 w-3 h-3 rounded-full bg-red-500 border-[1.5px] border-white" />
+              )}
             </Pressable>
           </View>
         </Animated.View>
@@ -788,12 +844,27 @@ export default function SearchScreen() {
       </Tabs.Container> */}
 
       <AnimatedFlatList
+        pointerEvents={isLoading ? 'none' : 'auto'}
         ref={flatScrollRef}
         data={data}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item, index }: any) => {
           // return <>{renderFoodTypeSection()}</>;
-          return renderContent(item, index) || <></>;
+          return isLoading ? (
+            <View style={styles.newsCard}>
+              {/* Изображение */}
+              <Skeleton height={200} borderRadius={12} style={{ marginBottom: 12 }} />
+
+              {/* Категория */}
+              <Skeleton width={80} height={24} borderRadius={12} style={{ marginBottom: 8 }} />
+
+              {/* Заголовок */}
+              <Skeleton width="100%" height={20} style={{ marginBottom: 8 }} />
+              <Skeleton width="80%" height={20} style={{ marginBottom: 12 }} />
+            </View>
+          ) : (
+            renderContent(item, index)
+          );
         }}
         // CellRendererComponent={({ item, index, children, style, ...props }) => (
         //   <View
@@ -855,3 +926,80 @@ export default function SearchScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  restaurantCard: {
+    padding: 4
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  listItem: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 12
+  },
+  listContent: {
+    flex: 1
+  },
+  contentCard: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 16,
+    borderRadius: 12,
+    backgroundColor: '#fff'
+  },
+  contentText: {
+    flex: 1
+  },
+  profileHeader: {
+    alignItems: 'center',
+    padding: 24
+  },
+  categoryCard: {
+    alignItems: 'center',
+    padding: 8
+  },
+  orderCard: {
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E0E0E0'
+  },
+  orderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    padding: 12
+  },
+  gridItem: {
+    padding: 8
+  },
+  newsCard: {
+    padding: 16,
+    backgroundColor: '#fff'
+  },
+  paymentCard: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0'
+  },
+  horizontalScroll: {
+    flexDirection: 'row',
+    gap: 16,
+    paddingHorizontal: 24
+  },
+  horizontalCard: {
+    width: 250
+  }
+});

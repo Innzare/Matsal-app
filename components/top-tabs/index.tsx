@@ -15,7 +15,7 @@ export function TopTabs({ tabNames, indexDecimal, onTabPress }: Props) {
   return (
     <View className="border-b border-stone-300">
       {/* Tab items container with bottom padding for visual spacing above indicator */}
-      <View className="flex-row pb-2" style={{ paddingHorizontal: TABS_HORIZONTAL_PADDING }}>
+      <View className="flex-row" style={{ paddingHorizontal: TABS_HORIZONTAL_PADDING }}>
         {tabNames.map((tab, index) => {
           return (
             <TabItem

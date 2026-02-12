@@ -28,7 +28,7 @@ export const TabItem: FC<Props> = ({ index, tabName, indexDecimal, onPress }) =>
     <TouchableOpacity
       activeOpacity={0.9} // Subtle press feedback without competing with color animation
       onPress={onPress}
-      className="flex-1 items-center justify-center" // flex-1 ensures equal width distribution
+      className="flex-1 items-center justify-center py-4" // flex-1 ensures equal width distribution
     >
       <Reanimated.Text className="text-base font-semibold" style={rTextStyle}>
         {tabName}

@@ -2,7 +2,8 @@ import { Icon } from '@/components/Icon';
 import { Text } from '@/components/Text';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
+import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
@@ -26,10 +27,11 @@ export default function RestaurantItem(props: any) {
   } = data;
 
   const router = useRouter();
-  const [isFavourite, setIsFavourite] = useState(false);
+  const { favoriteRestaurants, toggleFavorite } = useFavoritesStore();
+  const isFavourite = favoriteRestaurants.includes(data.id);
 
   const onFavouritePress = () => {
-    setIsFavourite((prev) => !prev);
+    toggleFavorite(data.id);
   };
 
   const onRestaurantPress = () => {
@@ -78,7 +80,7 @@ export default function RestaurantItem(props: any) {
           <Text className="font-semibold">{name}</Text>
 
           <View className="flex-row items-center gap-1">
-            <Icon set="ant" name="star" size={14} color="red" />
+            <Icon set="ant" name="star" size={14} color="#f59e0b" />
 
             <Text className="font-bold text-sm">{rate}</Text>
             <Text className="text-sm ml-1">{reviewsCount}</Text>

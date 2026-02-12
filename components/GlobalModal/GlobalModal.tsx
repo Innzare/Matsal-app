@@ -6,6 +6,9 @@ import Settings from './Settings';
 import Addresses from './Addresses';
 import Orders from './Orders';
 import AddAddressPage from './AddAddressPage';
+import Auth from './Auth';
+import Payment from './Payment';
+import Cart from './Cart';
 
 export default function GlobalModal() {
   const { isGlobalModalOpen, contentString } = useGlobalModalStore();
@@ -23,6 +26,15 @@ export default function GlobalModal() {
 
       case GLOBAL_MODAL_CONTENT.ADD_ADDRESS:
         return <AddAddressPage />;
+
+      case GLOBAL_MODAL_CONTENT.AUTH:
+        return <Auth />;
+
+      case GLOBAL_MODAL_CONTENT.PAYMENT:
+        return <Payment />;
+
+      case GLOBAL_MODAL_CONTENT.CART:
+        return <Cart />;
 
       default:
         return <Addresses />;

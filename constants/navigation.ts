@@ -1,4 +1,5 @@
 import HomeIcon from '@/components/Icons/Circle';
+import ShopIcon from '@/components/Icons/Shop';
 
 type RoutePath = '/' | '/favourites' | '/profile' | '/groceries' | '/carts' | '/search';
 
@@ -21,17 +22,17 @@ export const ROUTES: Route[] = [
       size: 25,
       set: 'ion',
       name: 'fast-food-outline',
-      component: HomeIcon
+      component: null
     }
   },
   {
     name: 'Продукты',
     path: '/groceries',
     icon: {
-      size: 21,
-      set: 'feather',
-      name: 'map',
-      component: null
+      size: 26,
+      set: 'materialCom',
+      name: 'storefront-outline',
+      component: ShopIcon
     }
   },
   {

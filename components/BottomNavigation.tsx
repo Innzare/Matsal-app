@@ -1,8 +1,9 @@
 import { usePathname, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { Pressable, View } from 'react-native';
 
 import { ROUTES, Route } from '@/constants/navigation';
+import { useCartStore } from '@/store/useCartStore';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,7 +24,8 @@ const NavItem = ({
   paddingBottom?: number;
 }) => {
   const animation = useSharedValue(1);
-  const [cartCount, setCartCount] = useState(18);
+  const { carts } = useCartStore();
+  const cartCount = Object.keys(carts).length;
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withTiming(animation.value, { duration: 200, easing: Easing.inOut(Easing.linear) }) }]
@@ -61,9 +63,9 @@ const NavItem = ({
 
       {/* <Icon set={route.icon.set} name={route.icon.name} size={route.icon.size} color={isActive ? 'red' : '#3d3d3d'} /> */}
 
-      {route.path === '/carts' && (
+      {route.path === '/carts' && cartCount > 0 && (
         <View className="aspect-square h-[20px] bg-red-500 absolute top-1 right-3 z-10 rounded-full justify-center items-center">
-          <Text className="text-white font-bold text-xs">{cartCount}</Text>
+          <Text className="text-white font-bold text-xs">{cartCount > 9 ? '9+' : cartCount}</Text>
         </View>
       )}
 

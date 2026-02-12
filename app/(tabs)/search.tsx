@@ -1,113 +1,447 @@
-import Categories from '@/components/Categories';
 import { Icon } from '@/components/Icon';
-import { AutoScrollBadges } from '@/components/ScrollableSlider';
+import { MarqueeBadges } from '@/components/MarqueeRow';
+import { Text as StyledText } from '@/components/Text';
+import { TopTabs } from '@/components/top-tabs';
+import { GROCERY_PRODUCTS, GROCERY_STORES, RESTAURANT_MENU, RESTAURANTS, RESTAURANTS2 } from '@/constants/resources';
+import type { GroceryProduct, MenuItem } from '@/constants/resources';
 import { useIsFocused } from '@react-navigation/native';
-import React, { useEffect, useRef } from 'react';
-import { ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { Tabs } from 'react-native-collapsible-tab-view';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const ITEMS = ['Пицца', 'Суши', 'Бургеры', 'Вок', 'Десерты', 'Кофе', 'Салаты', 'Напитки'];
-const groceries = [
-  'Фрукты и овощи',
-  'Молочные продукты',
-  'Мясо и рыба',
-  'Хлебобулочные изделия',
-  'Замороженные продукты',
-  'Напитки'
-];
-const restaurants = [
-  'Итальянская кухня',
-  'Японская кухня',
-  'Американская кухня',
-  'Китайская кухня',
-  'Фастфуд',
-  'Вегетарианская кухня'
-];
+const ALL_RESTAURANTS = [...RESTAURANTS, ...RESTAURANTS2];
+const ALL_GROCERIES = GROCERY_STORES;
+
+function SearchResultItem({
+  item,
+  onPress,
+  products
+}: {
+  item: (typeof ALL_RESTAURANTS)[0];
+  onPress: () => void;
+  products?: (MenuItem | GroceryProduct)[];
+}) {
+  return (
+    <View className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+      <Pressable onPress={onPress} className="flex-row items-center p-3 active:bg-stone-50">
+        <View className="relative">
+          <Image
+            source={{ uri: item.src }}
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 12
+            }}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+          />
+          <View className="absolute bottom-1.5 left-1.5 bg-amber-500 rounded px-1.5 py-0.5 flex-row items-center gap-0.5">
+            <Icon set="ant" name="star" size={8} color="#fff" />
+            <StyledText className="text-white text-[9px] font-bold">{item.rate}</StyledText>
+          </View>
+        </View>
+
+        <View className="flex-1 ml-3.5">
+          <StyledText className="font-bold text-[15px] text-stone-800" numberOfLines={1}>
+            {item.name}
+          </StyledText>
+          <StyledText className="text-xs text-stone-500 mt-0.5">
+            {item.deliveryTime} · от {item.minPrice} ₽
+          </StyledText>
+          <View className="flex-row items-center gap-1 mt-1">
+            <Icon set="ant" name="field-time" size={14} color="#EA004B" />
+            <StyledText className="text-xs font-semibold" style={{ color: '#EA004B' }}>
+              {item.reviewsCount}
+            </StyledText>
+          </View>
+        </View>
+
+        <View className="w-9 h-9 rounded-full bg-stone-100 items-center justify-center">
+          <Icon set="material" name="keyboard-arrow-right" size={22} color="#a8a29e" />
+        </View>
+      </Pressable>
+
+      {products && products.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          nestedScrollEnabled
+          contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12, gap: 8 }}
+        >
+          {products.map((product) => (
+            <View key={product.id} className="items-center bg-stone-50 rounded-xl p-2" style={{ width: 90 }}>
+              <Image
+                source={{ uri: product.image }}
+                style={{ width: 56, height: 56, borderRadius: 8 }}
+                contentFit="cover"
+                cachePolicy="memory-disk"
+              />
+              <StyledText className="text-[10px] text-stone-700 font-semibold text-center mt-1" numberOfLines={2}>
+                {product.name}
+              </StyledText>
+              <StyledText className="text-[10px] font-bold" style={{ color: '#EA004B' }}>
+                {product.price} ₽
+              </StyledText>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+    </View>
+  );
+}
 
 export default function Search() {
   const inputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
 
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [recentSearches, setRecentSearches] = useState(['Пицца Маргарита', 'Суши бар', 'Кофейня рядом']);
+  const [restaurantResults, setRestaurantResults] = useState<typeof ALL_RESTAURANTS>([]);
+  const [groceryResults, setGroceryResults] = useState<typeof ALL_GROCERIES>([]);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [activeQuery, setActiveQuery] = useState('');
+
+  const getRestaurantProducts = useCallback(
+    (restaurantId: number) => {
+      const menu = RESTAURANT_MENU[restaurantId] || [];
+      if (!activeQuery) return menu.slice(0, 5);
+      const lower = activeQuery.toLowerCase();
+      const filtered = menu.filter(
+        (m) => m.name.toLowerCase().includes(lower) || m.category.toLowerCase().includes(lower)
+      );
+      return filtered.length > 0 ? filtered : menu.slice(0, 5);
+    },
+    [activeQuery]
+  );
+
+  const getGroceryProducts = useCallback(
+    (storeId: number) => {
+      const products = GROCERY_PRODUCTS[storeId] || [];
+      if (!activeQuery) return products.slice(0, 5);
+      const lower = activeQuery.toLowerCase();
+      const filtered = products.filter(
+        (p) => p.name.toLowerCase().includes(lower) || p.category.toLowerCase().includes(lower)
+      );
+      return filtered.length > 0 ? filtered : products.slice(0, 5);
+    },
+    [activeQuery]
+  );
+
+  const removeRecent = (index: number) => {
+    setRecentSearches((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const performSearch = useCallback((query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    Keyboard.dismiss();
+    setSearchQuery(trimmed);
+
+    setRecentSearches((prev) => {
+      if (prev.includes(trimmed)) return prev;
+      return [trimmed, ...prev].slice(0, 10);
+    });
+
+    const lower = trimmed.toLowerCase();
+
+    const rResults = ALL_RESTAURANTS.filter((r) => r.name.toLowerCase().includes(lower));
+    setRestaurantResults(rResults.length > 0 ? rResults : ALL_RESTAURANTS);
+
+    const gResults = ALL_GROCERIES.filter((g) => g.name.toLowerCase().includes(lower));
+    setGroceryResults(gResults.length > 0 ? gResults : ALL_GROCERIES);
+
+    setActiveQuery(trimmed);
+    setIsSearchActive(true);
+  }, []);
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setRestaurantResults([]);
+    setGroceryResults([]);
+    setActiveQuery('');
+    setIsSearchActive(false);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
   useEffect(() => {
-    if (isFocused) {
+    if (isFocused && !isSearchActive) {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
     }
   }, [isFocused]);
 
-  return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
-      {isFocused ? <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" /> : null}
+  if (isSearchActive) {
+    return (
+      <View className="flex-1 bg-slate-50">
+        {isFocused ? <StatusBar barStyle="dark-content" /> : null}
 
-      <View className="border-b border-stone-300 pb-2">
-        <View className="mx-4 pl-3 bg-stone-50 border border-stone-300 flex-row items-center gap-3 rounded-full mb-1">
-          <Icon set="feather" name="search" />
-          <TextInput
-            ref={inputRef}
-            placeholderTextColor="#777"
-            placeholder="Поиск ресторанов и кафе"
-            // value={searchQuery}
-            // onChangeText={onSearchQueryChange}
-            className="flex-1 py-4 leading-[17px]"
-          />
+        <Tabs.Container
+          headerContainerStyle={{ shadowColor: 'transparent', paddingTop: insets.top }}
+          renderTabBar={(props) => <TopTabs {...props} />}
+          initialTabName="Рестораны"
+        >
+          <Tabs.Tab name="Рестораны" label="Рестораны">
+            <Tabs.ScrollView>
+              <View
+                className="px-4 pt-4 gap-3"
+                style={{ paddingBottom: insets.bottom + 140, paddingTop: insets.top + 10 }}
+              >
+                <View className="mx-2 mt-2 flex-row items-center justify-between mb-2">
+                  <Text className="font-bold text-lg text-stone-600">Результаты по «{searchQuery}»</Text>
+                  <TouchableOpacity onPress={clearSearch}>
+                    <Text className="text-sm font-bold" style={{ color: '#EA004B' }}>
+                      Сбросить
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {restaurantResults.map((item) => (
+                  <SearchResultItem
+                    key={item.id}
+                    item={item}
+                    onPress={() => router.push(`/restaurants/${item.id}`)}
+                    products={getRestaurantProducts(item.id)}
+                  />
+                ))}
+              </View>
+            </Tabs.ScrollView>
+          </Tabs.Tab>
+
+          <Tabs.Tab name="Продукты" label="Продукты">
+            <Tabs.ScrollView>
+              <View
+                className="px-4 pt-4 gap-3"
+                style={{ paddingBottom: insets.bottom + 140, paddingTop: insets.top + 10 }}
+              >
+                <View className="mx-4 mt-2 flex-row items-center justify-between mb-2">
+                  <Text className="font-bold text-lg text-stone-600">Результаты по «{searchQuery}»</Text>
+                  <TouchableOpacity onPress={clearSearch}>
+                    <Text className="text-sm font-bold" style={{ color: '#EA004B' }}>
+                      Сбросить
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {groceryResults.map((item) => (
+                  <SearchResultItem
+                    key={item.id}
+                    item={item}
+                    onPress={() => router.push(`/groceries/${item.id}`)}
+                    products={getGroceryProducts(item.id)}
+                  />
+                ))}
+              </View>
+            </Tabs.ScrollView>
+          </Tabs.Tab>
+        </Tabs.Container>
+
+        <View
+          className="absolute bottom-0 left-0 right-0 pb-2"
+          style={{ paddingBottom: insets.bottom + 70, zIndex: 100 }}
+          pointerEvents="box-none"
+        >
+          <View
+            className="mx-4 pl-5 bg-white border border-stone-300 flex-row items-center gap-3 rounded-full mb-1"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 8
+            }}
+          >
+            <Icon set="feather" name="search" />
+            <View className="flex-1 justify-center">
+              {searchQuery.length === 0 && (
+                <Text className="absolute" style={{ color: '#555' }}>
+                  Поиск ресторанов и кафе
+                </Text>
+              )}
+              <TextInput
+                ref={inputRef}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={() => performSearch(searchQuery)}
+                returnKeyType="search"
+                className="py-5 leading-[17px] text-stone-800"
+                style={{ fontWeight: '700' }}
+              />
+            </View>
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  if (isSearchActive) {
+                    clearSearch();
+                  } else {
+                    setSearchQuery('');
+                    inputRef.current?.focus();
+                  }
+                }}
+                activeOpacity={0.7}
+                className="w-8 h-8 rounded-full items-center justify-center bg-stone-200"
+                hitSlop={8}
+              >
+                <Icon set="feather" name="x" size={16} color="#78716c" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              onPress={() => performSearch(searchQuery)}
+              activeOpacity={0.7}
+              disabled={searchQuery.trim().length === 0}
+              className="w-10 h-10 rounded-full items-center justify-center mr-2"
+              style={{ backgroundColor: searchQuery.trim().length > 0 ? '#EA004B' : '#d4d4d4' }}
+            >
+              <Icon set="feather" name="arrow-right" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
+    );
+  }
 
-      <ScrollView className="flex-1 bg-slate-50 py-6" contentContainerStyle={{ flexGrow: 1 }}>
-        {/* <AutoScrollBadges></AutoScrollBadges> */}
+  return (
+    <View className="flex-1 bg-slate-50">
+      {isFocused ? <StatusBar translucent backgroundColor="transparent" barStyle="light-content" /> : null}
 
-        <Categories isTitleVisible={false}></Categories>
+      <View
+        style={{
+          borderBottomLeftRadius: 56,
+          borderBottomRightRadius: 56,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.45,
+          shadowRadius: 10,
+          elevation: 20
+        }}
+      >
+        <LinearGradient
+          colors={['#EA004B', '#000', '#000']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 3.3 }}
+          style={{
+            paddingTop: insets.top + 24,
+            paddingBottom: 16,
+            overflow: 'hidden'
+          }}
+        >
+          <Text className="font-bold text-center text-3xl mb-6 text-white">Что бы вы хотели сегодня?</Text>
+          <MarqueeBadges onBadgePress={performSearch} />
+        </LinearGradient>
+      </View>
 
-        <View className="px-6 mt-6">
-          <Text className="font-bold text-2xl">Часто ищут:</Text>
-        </View>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={-90}
+      >
+        <View style={{ flexGrow: 1, paddingBottom: insets.bottom + 70 }}>
+          <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+            {recentSearches.length > 0 && (
+              <View className="mx-4 mt-8 rounded-2xl overflow-hidden">
+                <View className="flex-row items-center justify-between mb-3">
+                  <Text className="font-bold text-lg text-stone-600">Недавно искали</Text>
+                  <TouchableOpacity onPress={() => setRecentSearches([])}>
+                    <Text className="text-sm" style={{ color: '#EA004B' }}>
+                      Очистить
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
-        <View className="flex-row gap-2 flex-wrap px-6 mt-3">
-          {ITEMS.map((item, index) => (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              key={index}
-              className="px-4 py-1 bg-white rounded-full border border-stone-300"
+                <View className=" gap-2">
+                  {recentSearches.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      activeOpacity={0.7}
+                      onPress={() => performSearch(item)}
+                      className={`bg-white border border-stone-300 rounded-full p-2 flex-row items-center px-4 py-3 ${
+                        index < recentSearches.length - 1 ? 'border-b border-stone-100' : ''
+                      }`}
+                    >
+                      <Icon set="feather" name="clock" size={16} color="#a8a29e" />
+                      <Text className="flex-1 ml-3 font-bold text-sm">{item}</Text>
+                      <TouchableOpacity className="ml-2" onPress={() => removeRecent(index)} hitSlop={8}>
+                        <Icon set="feather" name="x" size={16} color="#d4d4d4" />
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+          </ScrollView>
+
+          <View className="pb-2">
+            <View
+              className="mx-4 pl-5 bg-white border border-stone-300 flex-row items-center gap-3 rounded-full mb-1"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 8
+              }}
             >
-              <Text className="text-xs font-bold">{item}</Text>
-            </TouchableOpacity>
-          ))}
+              <Icon set="feather" name="search" />
+              <View className="flex-1 justify-center">
+                {searchQuery.length === 0 && (
+                  <Text className="absolute" style={{ color: '#555' }}>
+                    Поиск ресторанов и кафе
+                  </Text>
+                )}
+                <TextInput
+                  ref={inputRef}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={() => performSearch(searchQuery)}
+                  returnKeyType="search"
+                  className="py-5 leading-[17px] text-stone-800"
+                  style={{ fontWeight: '700' }}
+                />
+              </View>
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSearchQuery('');
+                    inputRef.current?.focus();
+                  }}
+                  activeOpacity={0.7}
+                  className="w-8 h-8 rounded-full items-center justify-center bg-stone-200"
+                  hitSlop={8}
+                >
+                  <Icon set="feather" name="x" size={16} color="#78716c" />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={() => performSearch(searchQuery)}
+                activeOpacity={0.7}
+                disabled={searchQuery.trim().length === 0}
+                className="w-10 h-10 rounded-full items-center justify-center mr-2"
+                style={{ backgroundColor: searchQuery.trim().length > 0 ? '#EA004B' : '#d4d4d4' }}
+              >
+                <Icon set="feather" name="arrow-right" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-
-        <View className="px-6 mt-8">
-          <Text className="font-bold text-2xl">Популярные заведения:</Text>
-        </View>
-
-        <View className="flex-row gap-2 flex-wrap px-6 mt-3">
-          {restaurants.map((item, index) => (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              key={index}
-              className="px-4 py-1 bg-white rounded-full border border-stone-300"
-            >
-              <Text className="text-xs font-bold">{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View className="px-6 mt-8">
-          <Text className="font-bold text-2xl">Продукты:</Text>
-        </View>
-
-        <View className="flex-row gap-2 flex-wrap px-6 mt-3">
-          {groceries.map((item, index) => (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              key={index}
-              className="px-4 py-1 bg-white rounded-full border border-stone-300"
-            >
-              <Text className="text-xs font-bold">{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }

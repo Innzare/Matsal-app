@@ -1,11 +1,14 @@
-export type globalModalContentType = 'settings' | 'addresses' | 'orders' | 'addAddress';
+export type globalModalContentType = 'settings' | 'addresses' | 'orders' | 'addAddress' | 'auth' | 'payment' | 'cart';
 export type globalBottomSheetContentType = 'menu_sections';
 
 export const GLOBAL_MODAL_CONTENT = {
   SETTINGS: 'settings' as globalModalContentType,
   ADDRESSES: 'addresses' as globalModalContentType,
   ADD_ADDRESS: 'add_address' as globalModalContentType,
-  ORDERS: 'orders' as globalModalContentType
+  ORDERS: 'orders' as globalModalContentType,
+  AUTH: 'auth' as globalModalContentType,
+  PAYMENT: 'payment' as globalModalContentType,
+  CART: 'cart' as globalModalContentType
 };
 
 export const GLOBAL_BOTTOM_SHEET_CONTENT = {

@@ -1,12 +1,17 @@
 import BottomNavigation from '@/components/BottomNavigation';
 import { useFonts } from 'expo-font';
-import { SplashScreen, Tabs } from 'expo-router';
+import { Redirect, SplashScreen, Tabs } from 'expo-router';
 import { useEffect } from 'react';
-import { StatusBar, View } from 'react-native';
+import { ActivityIndicator, StatusBar, Text, View } from 'react-native';
+
+import { useAuthStore } from '@/store/useAuthStore';
 
 import '@/assets/styles/global.css';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 export default function RootLayout() {
+  const { isAuthenticated, isLoading } = useAuthStore();
+
   // const [fontsLoaded, error] = useFonts({
   //   'Panton-Bold': require('@/assets/fonts/Panton-Bold.ttf'),
   //   'Panton-Light': require('@/assets/fonts/Panton-Light.ttf'),
@@ -21,18 +26,40 @@ export default function RootLayout() {
   //   if (fontsLoaded) SplashScreen.hideAsync();
   // }, [fontsLoaded, error]);
 
+  // 🆕 ПОКАЗЫВАЕМ ЗАГРУЗКУ
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#EA004B" />
+        <Text className="mt-4 text-stone-600">Загрузка...</Text>
+      </View>
+    );
+  }
+
+  // 🆕 ПЕРЕНАПРАВЛЯЕМ НА ЛОГИН ЕСЛИ НЕ АВТОРИЗОВАН
+  // if (!isAuthenticated) {
+  //   return <Redirect href="/auth/login" />;
+  // }
+
   return (
-    <View className="flex-1 relative bg-white">
+    <Animated.View entering={FadeIn.duration(300)} exiting={FadeOut.duration(200)} className="flex-1 relative bg-white">
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
 
       <View className="flex-1 relative bg-white">
         <View className="flex-1">
-          <Tabs screenOptions={{ headerShown: false, tabBarStyle: { display: 'none' } }} />
+          <Tabs
+            screenOptions={{
+              headerShown: false,
+              tabBarStyle: { display: 'none' },
+              animation: 'fade'
+              // animationDuration: 200
+            }}
+          />
           {/* <Stack screenOptions={{ gestureEnabled: false, headerShown: false, animation: 'none' }} /> */}
         </View>
 
         <BottomNavigation />
       </View>
-    </View>
+    </Animated.View>
   );
 }
