@@ -7,6 +7,7 @@ import { useGlobalModalStore } from '@/store/useGlobalModalStore';
 import { useCartStore } from '@/store/useCartStore';
 import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { useTheme } from '@/hooks/useTheme';
 
 interface OrderItem {
   id: string;
@@ -153,10 +154,10 @@ const ORDERS: Order[] = [
   }
 ];
 
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  delivered: { label: 'Доставлен', color: '#16a34a', bg: '#f0fdf4' },
-  in_progress: { label: 'В пути', color: '#ea580c', bg: '#fff7ed' },
-  cancelled: { label: 'Отменён', color: '#dc2626', bg: '#fef2f2' }
+const STATUS_MAP: Record<string, { label: string; color: string; bgLight: string; bgDark: string }> = {
+  delivered: { label: 'Доставлен', color: '#16a34a', bgLight: '#f0fdf4', bgDark: '#1a2a24' },
+  in_progress: { label: 'В пути', color: '#ea580c', bgLight: '#fff7ed', bgDark: '#2d2416' },
+  cancelled: { label: 'Отменён', color: '#dc2626', bgLight: '#fef2f2', bgDark: '#2d1820' }
 };
 
 const TRACKING_ICONS: Record<string, { set: string; name: string }> = {
@@ -175,6 +176,7 @@ const TABS = [
 function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
   const activeIndex = steps.findIndex((s) => !s.done);
   const currentStep = activeIndex === -1 ? steps.length - 1 : activeIndex;
+  const { colors, isDark } = useTheme();
 
   return (
     <View className="mt-1 mb-1">
@@ -191,7 +193,7 @@ function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
               <View
                 className="w-7 h-7 rounded-full items-center justify-center"
                 style={{
-                  backgroundColor: isDone ? '#ea580c' : isCurrent ? '#fff7ed' : '#f5f5f4',
+                  backgroundColor: isDone ? '#ea580c' : isCurrent ? (isDark ? '#2d2416' : '#fff7ed') : (isDark ? colors.elevated : '#f5f5f4'),
                   borderWidth: isCurrent && !isDone ? 2 : 0,
                   borderColor: '#ea580c'
                 }}
@@ -200,7 +202,7 @@ function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
                   set={icon.set}
                   name={icon.name}
                   size={14}
-                  color={isDone ? '#fff' : isCurrent ? '#ea580c' : '#a8a29e'}
+                  color={isDone ? '#fff' : isCurrent ? '#ea580c' : (isDark ? colors.textMuted : '#a8a29e')}
                 />
               </View>
               {!isLast && (
@@ -208,7 +210,7 @@ function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
                   style={{
                     width: 2,
                     height: 28,
-                    backgroundColor: isDone ? '#ea580c' : '#e7e5e4'
+                    backgroundColor: isDone ? '#ea580c' : (isDark ? colors.border : '#e7e5e4')
                   }}
                 />
               )}
@@ -218,12 +220,12 @@ function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
             <View className="flex-1 ml-3 pb-4">
               <Text
                 className="text-sm font-bold"
-                style={{ color: isDone || isCurrent ? '#1c1917' : '#a8a29e' }}
+                style={{ color: isDone || isCurrent ? (isDark ? colors.text : '#1c1917') : (isDark ? colors.textMuted : '#a8a29e') }}
               >
                 {step.label}
               </Text>
               {step.time && (
-                <Text className="text-xs text-stone-400 mt-0.5">{step.time}</Text>
+                <Text className="text-xs text-stone-400 dark:text-dark-muted mt-0.5">{step.time}</Text>
               )}
               {isCurrent && !isDone && (
                 <View className="flex-row items-center gap-1 mt-1">
@@ -245,6 +247,7 @@ export default function Orders() {
   const insets = useSafeAreaInsets();
   const { closeGlobalModal, openGlobalModal } = useGlobalModalStore();
   const { addItem, setActiveRestaurant, clearCart } = useCartStore();
+  const { colors, isDark } = useTheme();
   const [activeTab, setActiveTab] = useState('all');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
 
@@ -275,19 +278,19 @@ export default function Orders() {
   const activeCount = ORDERS.filter((o) => o.status === 'in_progress').length;
 
   return (
-    <View className="bg-stone-100 flex-1">
-      <StatusBar barStyle="dark-content" />
+    <View className="bg-stone-100 dark:bg-dark-bg flex-1">
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
       {/* Хедер */}
-      <View className="bg-white border-b border-stone-200" style={{ paddingTop: insets.top }}>
+      <View className="bg-white dark:bg-dark-surface border-b border-stone-200 dark:border-dark-border" style={{ paddingTop: insets.top }}>
         <View className="flex-row items-center justify-between px-4 pb-3">
-          <Text className="text-xl font-bold">Мои заказы</Text>
+          <Text className="text-xl font-bold dark:text-dark-text">Мои заказы</Text>
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={closeGlobalModal}
-            className="w-8 h-8 rounded-full bg-stone-100 justify-center items-center"
+            className="w-8 h-8 rounded-full bg-stone-100 dark:bg-dark-elevated justify-center items-center"
           >
-            <Icon set="ant" name="close" size={16} color="#000" />
+            <Icon set="ant" name="close" size={16} color={isDark ? colors.text : '#000'} />
           </TouchableOpacity>
         </View>
 
@@ -299,17 +302,19 @@ export default function Orders() {
                 key={tab.key}
                 activeOpacity={0.7}
                 onPress={() => setActiveTab(tab.key)}
-                className={`px-4 py-2 rounded-full border flex-row items-center gap-1.5 ${
-                  activeTab === tab.key ? 'border-stone-900 bg-stone-900' : 'border-stone-300 bg-white'
-                }`}
+                className="px-4 py-2 rounded-full border flex-row items-center gap-1.5"
+                style={{
+                  borderColor: activeTab === tab.key ? (isDark ? '#EA004B' : '#1c1917') : (isDark ? colors.border : '#d4d4d4'),
+                  backgroundColor: activeTab === tab.key ? (isDark ? '#EA004B' : '#1c1917') : (isDark ? colors.elevated : '#fff')
+                }}
               >
-                <Text className={`text-sm font-bold ${activeTab === tab.key ? 'text-white' : 'text-stone-600'}`}>
+                <Text className={`text-sm font-bold ${activeTab === tab.key ? 'text-white' : 'dark:text-dark-text'}`} style={{ color: activeTab === tab.key ? '#fff' : (isDark ? colors.text : '#57534e') }}>
                   {tab.label}
                 </Text>
                 {tab.key === 'active' && activeCount > 0 && (
                   <View
                     className="w-5 h-5 rounded-full items-center justify-center"
-                    style={{ backgroundColor: activeTab === 'active' ? '#ea580c' : '#fff7ed' }}
+                    style={{ backgroundColor: activeTab === 'active' ? '#ea580c' : (isDark ? '#2d2416' : '#fff7ed') }}
                   >
                     <Text
                       className="text-[10px] font-bold"
@@ -337,8 +342,8 @@ export default function Orders() {
                 key={order.id}
                 activeOpacity={0.7}
                 onPress={() => isActive && onToggleExpand(order.id)}
-                className={`mx-4 bg-white rounded-2xl overflow-hidden border ${index === 0 ? 'mt-4' : 'mt-3'}`}
-                style={{ borderColor: isActive ? '#fdba74' : '#e7e5e4' }}
+                className={`mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border ${index === 0 ? 'mt-4' : 'mt-3'}`}
+                style={{ borderColor: isActive ? '#fdba74' : (isDark ? colors.border : '#e7e5e4') }}
               >
                 {/* Оранжевый верхний акцент для активных */}
                 {isActive && (
@@ -351,23 +356,23 @@ export default function Orders() {
                     <View className="flex-row items-center gap-3">
                       <View
                         className="w-10 h-10 rounded-full items-center justify-center"
-                        style={{ backgroundColor: isActive ? '#fff7ed' : '#f5f5f4' }}
+                        style={{ backgroundColor: isActive ? (isDark ? '#2d2416' : '#fff7ed') : (isDark ? colors.elevated : '#f5f5f4') }}
                       >
                         <Text
                           className="font-bold text-xs"
-                          style={{ color: isActive ? '#ea580c' : '#78716c' }}
+                          style={{ color: isActive ? '#ea580c' : (isDark ? colors.textMuted : '#78716c') }}
                         >
                           {order.image}
                         </Text>
                       </View>
                       <View>
-                        <Text className="font-bold">{order.restaurant}</Text>
-                        <Text className="text-stone-400 text-xs">{order.date}</Text>
+                        <Text className="font-bold dark:text-dark-text">{order.restaurant}</Text>
+                        <Text className="text-stone-400 dark:text-dark-muted text-xs">{order.date}</Text>
                       </View>
                     </View>
 
                     <View className="flex-row items-center gap-2">
-                      <View className="px-3 py-1 rounded-full" style={{ backgroundColor: status.bg }}>
+                      <View className="px-3 py-1 rounded-full" style={{ backgroundColor: isDark ? status.bgDark : status.bgLight }}>
                         <Text className="text-xs font-bold" style={{ color: status.color }}>
                           {status.label}
                         </Text>
@@ -377,7 +382,7 @@ export default function Orders() {
                           set="feather"
                           name={isExpanded ? 'chevron-up' : 'chevron-down'}
                           size={18}
-                          color="#a8a29e"
+                          color={isDark ? colors.textMuted : '#a8a29e'}
                         />
                       )}
                     </View>
@@ -385,7 +390,7 @@ export default function Orders() {
 
                   {/* Время доставки для активных */}
                   {isActive && order.estimatedTime && (
-                    <View className="flex-row items-center gap-2 mb-3 px-3 py-2.5 rounded-xl" style={{ backgroundColor: '#fff7ed' }}>
+                    <View className="flex-row items-center gap-2 mb-3 px-3 py-2.5 rounded-xl" style={{ backgroundColor: isDark ? '#2d2416' : '#fff7ed' }}>
                       <Icon set="feather" name="clock" size={16} color="#ea580c" />
                       <Text className="text-sm font-bold" style={{ color: '#ea580c' }}>
                         Ожидаемое время: {order.estimatedTime}
@@ -405,17 +410,18 @@ export default function Orders() {
 
                       {/* Курьер */}
                       {order.courierName && (
-                        <View className="flex-row items-center gap-3 p-3 rounded-xl bg-stone-50 mb-3">
-                          <View className="w-9 h-9 rounded-full bg-orange-100 items-center justify-center">
+                        <View className="flex-row items-center gap-3 p-3 rounded-xl mb-3" style={{ backgroundColor: isDark ? colors.elevated : '#f5f5f4' }}>
+                          <View className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: isDark ? '#2d2416' : '#fed7aa' }}>
                             <Icon set="feather" name="user" size={16} color="#ea580c" />
                           </View>
                           <View className="flex-1">
-                            <Text className="text-xs text-stone-400">Курьер</Text>
-                            <Text className="font-bold text-sm">{order.courierName}</Text>
+                            <Text className="text-xs text-stone-400 dark:text-dark-muted">Курьер</Text>
+                            <Text className="font-bold text-sm dark:text-dark-text">{order.courierName}</Text>
                           </View>
                           <TouchableOpacity
                             activeOpacity={0.7}
-                            className="w-9 h-9 rounded-full bg-orange-100 items-center justify-center"
+                            className="w-9 h-9 rounded-full items-center justify-center"
+                            style={{ backgroundColor: isDark ? '#2d2416' : '#fed7aa' }}
                           >
                             <Icon set="feather" name="phone" size={16} color="#ea580c" />
                           </TouchableOpacity>
@@ -423,17 +429,17 @@ export default function Orders() {
                       )}
 
                       {/* Состав заказа */}
-                      <Text className="text-xs font-bold text-stone-400 mb-2">Состав заказа</Text>
-                      <View className="rounded-xl bg-stone-50 overflow-hidden mb-1">
+                      <Text className="text-xs font-bold text-stone-400 dark:text-dark-muted mb-2">Состав заказа</Text>
+                      <View className="rounded-xl overflow-hidden mb-1" style={{ backgroundColor: isDark ? colors.elevated : '#f5f5f4' }}>
                         {order.items.map((item, i) => (
                           <View
                             key={item.id}
                             className={`flex-row justify-between px-3 py-2.5 ${
-                              i < order.items.length - 1 ? 'border-b border-stone-100' : ''
+                              i < order.items.length - 1 ? 'border-b border-stone-100 dark:border-dark-border' : ''
                             }`}
                           >
-                            <Text className="text-sm text-stone-600 flex-1" numberOfLines={1}>{item.name}</Text>
-                            <Text className="text-sm font-bold text-stone-700 ml-2">{item.price} ₽</Text>
+                            <Text className="text-sm text-stone-600 dark:text-dark-muted flex-1" numberOfLines={1}>{item.name}</Text>
+                            <Text className="text-sm font-bold text-stone-700 dark:text-dark-text ml-2">{item.price} ₽</Text>
                           </View>
                         ))}
                       </View>
@@ -442,14 +448,14 @@ export default function Orders() {
 
                   {/* Состав заказа (свернутый, для не-активных или свёрнутых активных) */}
                   {(!isActive || !isExpanded) && (
-                    <Text className="text-stone-500 text-sm mb-3">
+                    <Text className="text-stone-500 dark:text-dark-muted text-sm mb-3">
                       {order.items.map((i) => i.name).join(', ')}
                     </Text>
                   )}
 
                   {/* Низ: сумма + кнопка */}
-                  <View className="flex-row items-center justify-between pt-3 border-t border-stone-100">
-                    <Text className="font-bold text-lg">{order.total} ₽</Text>
+                  <View className="flex-row items-center justify-between pt-3 border-t border-stone-100 dark:border-dark-border">
+                    <Text className="font-bold text-lg dark:text-dark-text">{order.total} ₽</Text>
 
                     {order.status === 'delivered' && (
                       <TouchableOpacity
@@ -467,7 +473,7 @@ export default function Orders() {
                         activeOpacity={0.7}
                         onPress={() => onToggleExpand(order.id)}
                         className="px-4 py-2 rounded-full flex-row items-center gap-1.5"
-                        style={{ backgroundColor: '#fff7ed' }}
+                        style={{ backgroundColor: isDark ? '#2d2416' : '#fff7ed' }}
                       >
                         <Icon set="feather" name="map-pin" size={14} color="#ea580c" />
                         <Text className="text-sm font-bold" style={{ color: '#ea580c' }}>Отследить</Text>
@@ -481,9 +487,9 @@ export default function Orders() {
         </ScrollView>
       ) : (
         <View className="flex-1 items-center justify-center px-8">
-          <Icon set="feather" name="shopping-bag" size={48} color="#d4d4d4" />
-          <Text className="text-stone-400 text-center mt-4 text-lg">Нет заказов</Text>
-          <Text className="text-stone-400 text-center text-sm mt-1">
+          <Icon set="feather" name="shopping-bag" size={48} color={isDark ? colors.border : '#d4d4d4'} />
+          <Text className="text-stone-400 dark:text-dark-muted text-center mt-4 text-lg">Нет заказов</Text>
+          <Text className="text-stone-400 dark:text-dark-muted text-center text-sm mt-1">
             {activeTab === 'active' ? 'Активных заказов пока нет' : 'Здесь будет история ваших заказов'}
           </Text>
         </View>

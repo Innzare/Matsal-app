@@ -6,11 +6,11 @@ function SvgComponent(props: any) {
     <Svg
       aria-hidden="true"
       className="fl-none"
-      width={25}
-      height={25}
+      width={27}
+      height={27}
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
-      strokeWidth={0.2}
+      strokeWidth={0.1}
       {...props}
     >
       <Path

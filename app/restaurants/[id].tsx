@@ -21,6 +21,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { useGlobalModalStore } from '@/store/useGlobalModalStore';
 import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
+import { useTheme } from '@/hooks/useTheme';
 
 const SECTIONS = [
   {
@@ -405,6 +406,7 @@ export default function Restaurant() {
   const { id } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   // const addressOpacity = useSharedValue(1);
   const isHeaderSearchInputVisible = useSharedValue(false);
   const isAutoScrolling = useRef(false);
@@ -525,12 +527,12 @@ export default function Restaurant() {
 
   const { height: wHeight } = Dimensions.get('window');
 
-  const HEADER_IMAGE_HEIGHT = wHeight / 4;
+  const HEADER_IMAGE_HEIGHT = 240;
 
   const headerImageStyle = useAnimatedStyle(() => {
     const height = interpolate(
       scrollY.value,
-      [-100, 0, 100],
+      [-100, 0, 120],
       [HEADER_IMAGE_HEIGHT + 100, HEADER_IMAGE_HEIGHT, HEADER_IMAGE_HEIGHT - 120],
       Extrapolation.CLAMP
     );
@@ -632,7 +634,7 @@ export default function Restaurant() {
   const onMenuItemPress = (item: any) => {
     openGlobalBottomSheet({
       content: <MenuItemContent item={item} restaurantId={String(id)} restaurantName={currentRestaurant?.name || ''} />,
-      snaps: ['85%'],
+      snaps: ['90%'],
       isBackgroundScalable: true
     });
   };
@@ -649,10 +651,10 @@ export default function Restaurant() {
                     <View className="relative w-[110] h-[110px] rounded-xl mb-2 overflow-hidden">
                       <TouchableOpacity
                         activeOpacity={0.85}
-                        className="absolute bottom-2 right-2 bg-white rounded-full p-1"
+                        className="absolute bottom-2 right-2 bg-white dark:bg-dark-surface rounded-full p-1"
                         onPress={() => onMenuItemPress(item)}
                       >
-                        <Icon set="feather" name="plus" size={21}></Icon>
+                        <Icon set="feather" name="plus" size={21} color={isDark ? colors.text : '#000'}></Icon>
                       </TouchableOpacity>
 
                       <ExpoImage
@@ -669,7 +671,7 @@ export default function Restaurant() {
                     </View>
 
                     <View className="items-start px-1">
-                      <Text className="font-bold mb-1">{item.name}</Text>
+                      <Text className="font-bold mb-1 dark:text-dark-text">{item.name}</Text>
                       <Text className="font-bold text-sm" style={{ color: '#EA004B' }}>
                         {item.price} ₽
                       </Text>
@@ -684,16 +686,16 @@ export default function Restaurant() {
 
       case 'popular': {
         return (
-          <View className="px-6 flex-row flex-wrap gap-4">
+          <View className="px-6 flex-row flex-wrap justify-between gap-y-4">
             {section.items.map((item: any, i: number, arr: any) => {
               return (
-                <Pressable key={i} className="w-[48%]" onPress={() => onMenuItemPress(item)}>
+                <Pressable key={i} style={{ width: '48%' }} onPress={() => onMenuItemPress(item)}>
                   <View className="relative aspect-square rounded-xl overflow-hidden">
                     <TouchableOpacity
-                      className="absolute bottom-2 right-2 bg-white rounded-full p-1"
+                      className="absolute bottom-2 right-2 bg-white dark:bg-dark-surface rounded-full p-1"
                       onPress={() => onMenuItemPress(item)}
                     >
-                      <Icon set="feather" name="plus" size={21}></Icon>
+                      <Icon set="feather" name="plus" size={21} color={isDark ? colors.text : '#000'}></Icon>
                     </TouchableOpacity>
 
                     <ExpoImage
@@ -710,7 +712,7 @@ export default function Restaurant() {
                   </View>
 
                   <View className="items-start px-1 gap-0.5 mt-1">
-                    <Text className="font-bold text-lg">{item.name}</Text>
+                    <Text className="font-bold text-lg dark:text-dark-text">{item.name}</Text>
                     <Text className="font-bold text-sm" style={{ color: '#EA004B' }}>
                       {item.price} ₽
                     </Text>
@@ -728,9 +730,9 @@ export default function Restaurant() {
             <Pressable key={i} className="px-6" onPress={() => onMenuItemPress(item)}>
               <View className="rounded-md flex-row gap-4 justify-between">
                 <View className="flex-1 items-start">
-                  <Text className="text-xl mb-2 font-bold text-stone-600">{item.name}</Text>
+                  <Text className="text-xl mb-2 font-bold text-stone-600 dark:text-dark-text">{item.name}</Text>
 
-                  <Text numberOfLines={2} ellipsizeMode="tail" className="text-sm text-stone-500 leading-5 mb-4">
+                  <Text numberOfLines={2} ellipsizeMode="tail" className="text-sm text-stone-500 dark:text-dark-muted leading-5 mb-4">
                     {item.description}
                   </Text>
 
@@ -741,10 +743,10 @@ export default function Restaurant() {
 
                 <View className="relative w-[100px] h-[100px]">
                   <TouchableOpacity
-                    className="absolute bottom-2 right-2 bg-white rounded-full p-1"
+                    className="absolute bottom-2 right-2 bg-white dark:bg-dark-surface rounded-full p-1"
                     onPress={() => onMenuItemPress(item)}
                   >
-                    <Icon set="feather" name="plus" size={21}></Icon>
+                    <Icon set="feather" name="plus" size={21} color={isDark ? colors.text : '#000'}></Icon>
                   </TouchableOpacity>
 
                   <ExpoImage
@@ -762,7 +764,7 @@ export default function Restaurant() {
                 </View>
               </View>
 
-              {i < arr.length - 1 ? <View className="h-[1px] w-full bg-stone-200 my-8"></View> : null}
+              {i < arr.length - 1 ? <View className="h-[1px] w-full bg-stone-200 dark:bg-dark-border my-8"></View> : null}
             </Pressable>
           );
         });
@@ -773,8 +775,8 @@ export default function Restaurant() {
   const renderResturantAndDeliveryInfo = () => {
     return (
       <View className="pt-[150px] items-center px-4 mt-2">
-        <Text className="text-2xl text-center font-bold mb-1">{currentRestaurant?.name}</Text>
-        <Text className="text-center">
+        <Text className="text-2xl text-center font-bold mb-1 dark:text-dark-text">{currentRestaurant?.name}</Text>
+        <Text className="text-sm text-center tracking-tight text-stone-600 dark:text-dark-muted leading-4">
           Lorem ipsum dolor, sit amet consectetur adipisicing elit. A reiciendis perferendis, recusandae molestiae id
           magni aliquam.
         </Text>
@@ -782,59 +784,65 @@ export default function Restaurant() {
         <View className="flex-row gap-3 w-full mt-6">
           <Pressable
             onPress={onReviewsPress}
-            className="flex-1 bg-white border border-stone-300 rounded-xl p-3 items-center justify-between"
+            className="flex-1 bg-white dark:bg-dark-surface border border-stone-300 dark:border-dark-border rounded-xl p-3 items-center justify-between"
           >
             <View className="flex-row items-center gap-2">
               <Icon set="ant" name="star" size={20} color="#f59e0b" />
-              <Text className="text-xl font-bold">4.5</Text>
+              <Text className="text-xl font-bold dark:text-dark-text">4.5</Text>
             </View>
-            <Text className="text-stone-500 text-sm">100+ отзывов</Text>
+            <Text className="text-stone-500 dark:text-dark-muted text-sm">100+ отзывов</Text>
           </Pressable>
 
           <Pressable
             onPress={onAboutRestaurantPress}
-            className="flex-1 bg-white border border-stone-300 rounded-xl p-3 items-center justify-between"
+            className="flex-1 bg-white dark:bg-dark-surface border border-stone-300 dark:border-dark-border rounded-xl p-3 items-center justify-between"
           >
             <Icon set="feather" name="info" size={20} color="#EA004B" />
-            <Text className="text-stone-500 text-sm">О ресторане</Text>
+            <Text className="text-stone-500 dark:text-dark-muted text-sm">О ресторане</Text>
           </Pressable>
 
-          <Pressable className="flex-1 bg-white border border-stone-300 rounded-xl p-3 items-center justify-between">
+          <Pressable className="flex-1 bg-white dark:bg-dark-surface border border-stone-300 dark:border-dark-border rounded-xl p-3 items-center justify-between">
             <Icon set="feather" name="share-2" size={20} color="#EA004B" />
-            <Text className="text-stone-500 text-sm">Поделиться</Text>
+            <Text className="text-stone-500 dark:text-dark-muted text-sm">Поделиться</Text>
           </Pressable>
         </View>
 
-        <View className="mt-3 p-4 py-6 border border-stone-300 rounded-xl w-full items-center flex-row gap-6">
+        <View className="mt-3 p-4 py-6 border border-stone-300 dark:border-dark-border rounded-xl w-full items-center flex-row gap-6 bg-white dark:bg-dark-surface">
           <Pressable
             onPress={onChangeDeliveryTypePress}
-            className="p-0.5 border border-stone-300 rounded-full flex-row bg-stone-200"
+            className="p-0.5 border border-stone-300 dark:border-dark-border rounded-full flex-row bg-stone-200 dark:bg-dark-elevated"
           >
             <View
-              className={`py-1 px-2.5 border ${deliveryType === 'delivery' ? ' border-stone-300' : 'border-transparent'}`}
-              style={{ borderRadius: 100, backgroundColor: deliveryType === 'delivery' ? '#fff' : 'transparent' }}
+              className={`py-1 px-2.5 border ${deliveryType === 'delivery' ? 'border-stone-300 dark:border-dark-border' : 'border-transparent'}`}
+              style={{
+                borderRadius: 100,
+                backgroundColor: deliveryType === 'delivery' ? (isDark ? colors.surface : '#fff') : 'transparent'
+              }}
             >
-              <Icon set="material" name="delivery-dining" color={deliveryType === 'delivery' ? '#000' : '#aaa'} />
+              <Icon set="material" name="delivery-dining" color={deliveryType === 'delivery' ? (isDark ? colors.text : '#000') : (isDark ? colors.textMuted : '#aaa')} />
             </View>
 
             <View
-              className={`py-1 px-2.5 border ${deliveryType === 'pickup' ? ' border-stone-300' : 'border-transparent'}`}
-              style={{ borderRadius: 100, backgroundColor: deliveryType === 'pickup' ? '#fff' : 'transparent' }}
+              className={`py-1 px-2.5 border ${deliveryType === 'pickup' ? 'border-stone-300 dark:border-dark-border' : 'border-transparent'}`}
+              style={{
+                borderRadius: 100,
+                backgroundColor: deliveryType === 'pickup' ? (isDark ? colors.surface : '#fff') : 'transparent'
+              }}
             >
-              <Icon set="material" name="directions-walk" color={deliveryType === 'pickup' ? '#000' : '#aaa'} />
+              <Icon set="material" name="directions-walk" color={deliveryType === 'pickup' ? (isDark ? colors.text : '#000') : (isDark ? colors.textMuted : '#aaa')} />
             </View>
           </Pressable>
 
           <View className="gap-2">
             {deliveryType === 'delivery' ? (
               <View>
-                <Text className="font-bold text-xl">Доставка 35-40 мин.</Text>
-                <Text className="text-stone-500">Мин. стоимость заказа - от 500р.</Text>
+                <Text className="font-bold text-xl dark:text-dark-text">Доставка 35-40 мин.</Text>
+                <Text className="text-stone-500 dark:text-dark-muted">Мин. стоимость заказа - от 500р.</Text>
               </View>
             ) : (
               <View>
-                <Text className="font-bold text-xl">Самовывоз</Text>
-                <Text className="text-stone-500">Мин. стоимость заказа - Любая цена</Text>
+                <Text className="font-bold text-xl dark:text-dark-text">Самовывоз</Text>
+                <Text className="text-stone-500 dark:text-dark-muted">Мин. стоимость заказа - Любая цена</Text>
               </View>
             )}
           </View>
@@ -846,26 +854,26 @@ export default function Restaurant() {
   const renderSearchInput = () => {
     return (
       <View
-        className="px-4 pt-4 mt-10 rounded-t-3xl bg-white"
+        className="px-4 pt-4 mt-10 rounded-t-3xl bg-white dark:bg-dark-surface"
         style={{
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -8 }, // тень сверху
-          shadowOpacity: 0.1,
+          shadowOpacity: isDark ? 0.3 : 0.1,
           shadowRadius: 6,
           borderWidth: isAndroid ? 1 : 0,
-          borderColor: '#ccc',
+          borderColor: isDark ? colors.border : '#ccc',
           borderBottomWidth: 0
           // elevation: 4, // Android
         }}
       >
-        <Text className="text-center mb-2 font-bold text-lg">Меню</Text>
+        <Text className="text-center mb-2 font-bold text-lg dark:text-dark-text">Меню</Text>
 
-        <View className="pl-3 bg-stone-100 border border-stone-200 w-full flex-row items-center gap-3 rounded-full">
-          <Icon set="feather" name="search" />
+        <View className="pl-3 bg-stone-100 dark:bg-dark-elevated border border-stone-200 dark:border-dark-border w-full flex-row items-center gap-3 rounded-full">
+          <Icon set="feather" name="search" color={isDark ? colors.textSecondary : colors.iconMuted} />
           <TextInput
-            placeholderTextColor="#666"
+            placeholderTextColor={isDark ? colors.textSecondary : '#666'}
             placeholder={`Поиск в меню ${currentRestaurant?.name}`}
-            className="flex-1 py-4 leading-[17px]"
+            className="flex-1 py-4 leading-[17px] dark:text-dark-text"
           />
         </View>
       </View>
@@ -874,12 +882,12 @@ export default function Restaurant() {
 
   const renderHorizontalMenuSections = () => {
     return (
-      <View className="flex-row mt-4 items-stretch bg-white flex-grow-0 mb-8">
-        <TouchableOpacity className="p-2 px-4 justify-center border-b border-stone-200" onPress={onSectionsListPress}>
-          <Icon set="feather" name="list" size={23}></Icon>
+      <View className="flex-row mt-4 items-stretch bg-white dark:bg-dark-surface flex-grow-0 mb-8">
+        <TouchableOpacity className="p-2 px-4 justify-center border-b border-stone-200 dark:border-dark-border" onPress={onSectionsListPress}>
+          <Icon set="feather" name="list" size={23} color={isDark ? colors.text : '#000'}></Icon>
         </TouchableOpacity>
 
-        <View className="border-b border-stone-200 flex-1">
+        <View className="border-b border-stone-200 dark:border-dark-border flex-1">
           <ScrollView
             ref={tabsRef}
             horizontal
@@ -892,11 +900,15 @@ export default function Restaurant() {
                 return (
                   <Pressable
                     key={i}
-                    className={`p-4 pt-5 border-b-2 ${activeTab === i ? 'border-stone-950' : 'border-transparent'}`}
+                    className={`p-4 pt-4 border-b-2 ${activeTab === i ? (isDark ? 'border-dark-text' : 'border-stone-950') : 'border-transparent'}`}
                     onLayout={onLayoutTab(i)}
                     onPress={() => handlePressTab(i)}
                   >
-                    <Text className={`font-bold ${activeTab === i ? 'text-black' : 'text-stone-400'}`}>{s.title}</Text>
+                    <Text
+                      className={`text-sm tracking-tight font-bold ${activeTab === i ? (isDark ? 'text-dark-text' : 'text-black') : (isDark ? 'text-dark-muted' : 'text-stone-400')}`}
+                    >
+                      {s.title}
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -910,20 +922,20 @@ export default function Restaurant() {
   const renderMenu = (item: any) => {
     return (
       <View>
-        <Text className="text-2xl font-bold mb-6 px-6">{item.title}</Text>
+        <Text className="text-2xl font-bold mb-4 px-6 dark:text-dark-text">{item.title}</Text>
 
         <View className="">{renderMenuItems(item)}</View>
 
-        <View className="h-[5px] w-full bg-stone-200 mt-10 mb-8"></View>
+        <View className="h-[5px] w-full bg-stone-200 dark:bg-dark-border mt-10 mb-8"></View>
       </View>
     );
   };
 
   return (
-    <View className="relative flex-1 bg-white">
+    <View className="relative flex-1 bg-white dark:bg-dark-surface">
       <Animated.View
-        style={[headerImageStyle, { backgroundColor: '#d6d3d1' }]}
-        className="w-full absolute top-0 left-0 z-30 min-h-[120px]"
+        style={[headerImageStyle, { backgroundColor: isDark ? colors.elevated : '#ccc' }]}
+        className="w-full absolute top-0 left-0 z-30 min-h-[100px]"
       >
         {/* <AnimatedImage
           source={{ uri: currentRestaurant?.src }}
@@ -938,11 +950,15 @@ export default function Restaurant() {
           resizeMode={'cover'}
         ></AnimatedImage> */}
 
+        {/* <View className="absolute left-0 -z-10 top-0 w-full h-full bg-red-500"></View> */}
+
         <AnimatedImage
           style={[
             {
               width: '100%',
               height: '100%'
+              // borderBottomLeftRadius: 30,
+              // borderBottomRightRadius: 30
             },
             ImageOpacityStyle
           ]}
@@ -953,43 +969,43 @@ export default function Restaurant() {
         />
 
         <View
-          className="absolute top-0 left-0 w-full z-10 flex-row items-center justify-between px-4 mt-4 gap-4"
+          className="absolute top-0 left-0 w-full z-10 flex-row items-stretch justify-between px-4 mt-2 gap-3"
           style={[{ paddingTop: insets.top }]}
         >
           <TouchableOpacity
             onPress={onGoBackPress}
-            className="bg-white rounded-full p-1 w-[40px] h-[40px] items-center justify-center"
+            className="bg-white dark:bg-dark-surface rounded-full p-1 w-[40px] h-[40px] items-center justify-center"
           >
-            <Icon set="feather" name="arrow-left" size={19} />
+            <Icon set="feather" name="arrow-left" size={19} color={isDark ? colors.text : '#000'} />
           </TouchableOpacity>
 
           <Animated.View
-            className="pl-2 py-1 bg-white flex-1 flex-row items-center gap-3 rounded-full"
+            className="pl-3 py-1 bg-white dark:bg-dark-surface border border-transparent dark:border-dark-border flex-1 flex-row items-center gap-3 rounded-full"
             style={[headerSearchInputStyle]}
           >
-            <Icon set="feather" name="search" size={21} />
+            <Icon set="feather" name="search" size={21} color={isDark ? colors.textSecondary : colors.iconMuted} />
             <TextInput
-              placeholderTextColor="#777777"
+              placeholderTextColor={isDark ? colors.textSecondary : '#777777'}
               placeholder={`Поиск в меню ${currentRestaurant?.name}`}
-              className="flex-1 py-2 leading-[17px]"
+              className="flex-1 py-2 leading-[17px] dark:text-dark-text"
             />
           </Animated.View>
 
           <TouchableOpacity
             onPress={() => toggleFavorite(Number(id))}
-            className="bg-white rounded-full p-1 w-[40px] h-[40px] items-center justify-center pt-1.5"
+            className="bg-white dark:bg-dark-surface rounded-full p-1 w-[40px] h-[40px] items-center justify-center pt-1.5"
           >
             <Icon
               set="ion"
               name={isFavorite ? 'heart' : 'heart-outline'}
               size={24}
-              color={isFavorite ? 'red' : '#000'}
+              color={isFavorite ? 'red' : (isDark ? colors.text : '#000')}
             />
           </TouchableOpacity>
         </View>
 
         <Animated.View
-          className="absolute bottom-0 left-[50%] translate-y-[20%] -translate-x-[50%] w-[50px] h-[50px] bg-stone-300 rounded-lg justify-center items-center z-20"
+          className="absolute bottom-0 left-[50%] translate-y-[20%] -translate-x-[50%] w-[70px] h-[70px] bg-stone-100 dark:bg-dark-elevated border border-stone-200 dark:border-dark-border rounded-xl justify-center items-center z-20"
           style={[ImageOpacityStyle]}
         >
           <Icon set="ion" name="fast-food" size={24} color="red" />
@@ -1053,7 +1069,7 @@ export default function Restaurant() {
         }, 0);
         return (
           <Animated.View
-            className="absolute left-0 bottom-0 right-0 px-5 pt-2 bg-white border-t border-stone-200 z-30"
+            className="absolute left-0 bottom-0 right-0 px-5 pt-2 bg-white dark:bg-dark-surface border-t border-stone-200 dark:border-dark-border z-30"
             style={{ paddingBottom: insets.bottom + 10 }}
           >
             <TouchableOpacity

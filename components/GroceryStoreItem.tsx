@@ -1,5 +1,6 @@
 import { Icon } from '@/components/Icon';
 import { Text } from '@/components/Text';
+import { useTheme } from '@/hooks/useTheme';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -15,6 +16,7 @@ interface GroceryStoreItemProps {
 }
 
 export default function GroceryStoreItem({ data, variant = 'compact' }: GroceryStoreItemProps) {
+  const { colors, isDark } = useTheme();
   const animation = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withTiming(animation.value, { duration: 200, easing: Easing.inOut(Easing.linear) }) }]
@@ -48,7 +50,7 @@ export default function GroceryStoreItem({ data, variant = 'compact' }: GroceryS
         onPressIn={() => { animation.value = 0.98; }}
         onPressOut={() => { animation.value = 1; }}
         onPress={onStorePress}
-        className="flex-row items-center px-5 py-3 bg-white"
+        className="flex-row items-center px-5 py-3 bg-white dark:bg-dark-surface"
         style={[animatedStyle]}
       >
         {/* Лого магазина */}
@@ -60,18 +62,18 @@ export default function GroceryStoreItem({ data, variant = 'compact' }: GroceryS
               height: 80,
               borderRadius: 12,
               borderWidth: 1,
-              borderColor: '#e7e5e4'
+              borderColor: isDark ? colors.border : '#e7e5e4'
             }}
             contentFit="cover"
             cachePolicy="memory-disk"
           />
           {/* Сердечко */}
           <Pressable
-            className="absolute -top-1 -right-1 w-7 h-7 items-center justify-center bg-white rounded-full"
-            style={{ shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 }}
+            className="absolute -top-1 -right-1 w-7 h-7 items-center justify-center bg-white dark:bg-dark-surface rounded-full"
+            style={{ shadowColor: '#000', shadowOpacity: isDark ? 0.3 : 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 }}
             onPress={onFavouritePress}
           >
-            <Icon set="ion" name="heart" size={16} color={isFavourite ? 'red' : '#d4d4d4'} />
+            <Icon set="ion" name="heart" size={16} color={isFavourite ? 'red' : (isDark ? colors.textMuted : '#d4d4d4')} />
           </Pressable>
           {/* Бейдж Featured */}
           <View className="absolute bottom-1.5 left-1.5 bg-green-600 rounded px-1.5 py-0.5">
@@ -81,8 +83,8 @@ export default function GroceryStoreItem({ data, variant = 'compact' }: GroceryS
 
         {/* Инфо */}
         <View className="flex-1 ml-3.5">
-          <Text className="font-bold text-[15px] text-stone-800" numberOfLines={1}>{name}</Text>
-          <Text className="text-xs text-stone-500 mt-0.5">{deliveryTime} · от {minPrice} ₽</Text>
+          <Text className="font-bold text-[15px] text-stone-800 dark:text-dark-text" numberOfLines={1}>{name}</Text>
+          <Text className="text-xs text-stone-500 dark:text-dark-muted mt-0.5">{deliveryTime} · от {minPrice} ₽</Text>
           <View className="flex-row items-center gap-1 mt-1">
             <Icon set="material" name="local-shipping" size={14} color="#16a34a" />
             <Text className="text-xs font-semibold" style={{ color: '#16a34a' }}>Бесплатно</Text>
@@ -90,8 +92,8 @@ export default function GroceryStoreItem({ data, variant = 'compact' }: GroceryS
         </View>
 
         {/* Стрелка */}
-        <View className="w-9 h-9 rounded-full bg-stone-100 items-center justify-center">
-          <Icon set="material" name="keyboard-arrow-right" size={22} color="#a8a29e" />
+        <View className="w-9 h-9 rounded-full bg-stone-100 dark:bg-dark-elevated items-center justify-center">
+          <Icon set="material" name="keyboard-arrow-right" size={22} color={colors.iconMuted} />
         </View>
       </AnimatedPressable>
     );
@@ -114,23 +116,23 @@ export default function GroceryStoreItem({ data, variant = 'compact' }: GroceryS
             height: 100,
             borderRadius: 16,
             borderWidth: 1,
-            borderColor: '#e7e5e4'
+            borderColor: isDark ? colors.border : '#e7e5e4'
           }}
           contentFit="cover"
           cachePolicy="memory-disk"
         />
         {/* Сердечко */}
         <Pressable
-          className="absolute -top-1 -right-1 w-6 h-6 items-center justify-center bg-white rounded-full"
-          style={{ shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 2 }}
+          className="absolute -top-1 -right-1 w-6 h-6 items-center justify-center bg-white dark:bg-dark-surface rounded-full"
+          style={{ shadowColor: '#000', shadowOpacity: isDark ? 0.3 : 0.1, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 2 }}
           onPress={onFavouritePress}
         >
-          <Icon set="ion" name="heart" size={14} color={isFavourite ? 'red' : '#d4d4d4'} />
+          <Icon set="ion" name="heart" size={14} color={isFavourite ? 'red' : (isDark ? colors.textMuted : '#d4d4d4')} />
         </Pressable>
       </View>
 
-      <Text className="font-bold text-xs text-stone-800 text-center mt-2" numberOfLines={2}>{name}</Text>
-      <Text className="text-[11px] text-stone-400 text-center mt-0.5">{deliveryTime}</Text>
+      <Text className="font-bold text-xs text-stone-800 dark:text-dark-text text-center mt-2" numberOfLines={2}>{name}</Text>
+      <Text className="text-[11px] text-stone-400 dark:text-dark-muted text-center mt-0.5">{deliveryTime}</Text>
     </AnimatedPressable>
   );
 }

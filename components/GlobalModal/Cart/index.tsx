@@ -8,6 +8,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { GROCERY_STORES } from '@/constants/resources';
 import CartStep from './CartStep';
 import CheckoutStep from './CheckoutStep';
+import { useTheme } from '@/hooks/useTheme';
 
 const GROCERY_IDS = new Set(GROCERY_STORES.map((s) => String(s.id)));
 
@@ -18,6 +19,8 @@ const STEPS = [
 ];
 
 function StepIndicator({ activeStep, accentColor }: { activeStep: number; accentColor: string }) {
+  const { colors, isDark } = useTheme();
+
   return (
     <View className="flex-row items-center justify-center px-8 py-3">
       {STEPS.map((step, index) => {
@@ -31,7 +34,7 @@ function StepIndicator({ activeStep, accentColor }: { activeStep: number; accent
               <View
                 className="w-7 h-7 rounded-full items-center justify-center"
                 style={{
-                  backgroundColor: isCompleted || isActive ? accentColor : '#e7e5e4'
+                  backgroundColor: isCompleted || isActive ? accentColor : (isDark ? colors.elevated : '#e7e5e4')
                 }}
               >
                 {isCompleted ? (
@@ -39,7 +42,7 @@ function StepIndicator({ activeStep, accentColor }: { activeStep: number; accent
                 ) : (
                   <Text
                     className="text-xs font-bold"
-                    style={{ color: isActive ? '#fff' : '#a8a29e' }}
+                    style={{ color: isActive ? '#fff' : (isDark ? colors.textMuted : '#a8a29e') }}
                   >
                     {step.key}
                   </Text>
@@ -47,7 +50,7 @@ function StepIndicator({ activeStep, accentColor }: { activeStep: number; accent
               </View>
               <Text
                 className="text-[10px] mt-1 font-semibold"
-                style={{ color: isCompleted || isActive ? accentColor : '#a8a29e' }}
+                style={{ color: isCompleted || isActive ? accentColor : (isDark ? colors.textMuted : '#a8a29e') }}
               >
                 {step.label}
               </Text>
@@ -57,7 +60,7 @@ function StepIndicator({ activeStep, accentColor }: { activeStep: number; accent
               <View
                 className="flex-1 h-[2px] mx-2 -mt-3"
                 style={{
-                  backgroundColor: isCompleted ? accentColor : '#e7e5e4'
+                  backgroundColor: isCompleted ? accentColor : (isDark ? colors.border : '#e7e5e4')
                 }}
               />
             )}
@@ -70,6 +73,7 @@ function StepIndicator({ activeStep, accentColor }: { activeStep: number; accent
 
 export default function Cart() {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
   const { closeGlobalModal } = useGlobalModalStore();
   const { clearCart, activeRestaurantId } = useCartStore();
   const [activeStep, setActiveStep] = useState(2);
@@ -88,32 +92,32 @@ export default function Cart() {
   };
 
   return (
-    <View className="bg-stone-100 flex-1">
-      <StatusBar barStyle="dark-content" />
+    <View className="bg-stone-100 dark:bg-dark-bg flex-1">
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
       {/* Хедер */}
-      <View className="bg-white border-b border-stone-200" style={{ paddingTop: insets.top }}>
+      <View className="bg-white dark:bg-dark-surface border-b border-stone-200 dark:border-dark-border" style={{ paddingTop: insets.top }}>
         <View className="flex-row items-center justify-between px-4 pb-3">
           {activeStep === 3 ? (
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={goBackToCart}
-              className="w-8 h-8 rounded-full bg-stone-100 justify-center items-center"
+              className="w-8 h-8 rounded-full bg-stone-100 dark:bg-dark-elevated justify-center items-center"
             >
-              <Icon set="feather" name="chevron-left" size={20} color="#000" />
+              <Icon set="feather" name="chevron-left" size={20} color={isDark ? colors.text : '#000'} />
             </TouchableOpacity>
           ) : (
             <View className="w-8" />
           )}
 
-          <Text className="text-xl font-bold">{title}</Text>
+          <Text className="text-xl font-bold dark:text-dark-text">{title}</Text>
 
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={closeGlobalModal}
-            className="w-8 h-8 rounded-full bg-stone-100 justify-center items-center"
+            className="w-8 h-8 rounded-full bg-stone-100 dark:bg-dark-elevated justify-center items-center"
           >
-            <Icon set="ant" name="close" size={16} color="#000" />
+            <Icon set="ant" name="close" size={16} color={isDark ? colors.text : '#000'} />
           </TouchableOpacity>
         </View>
 

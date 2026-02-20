@@ -9,6 +9,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { useBottomSheetStore } from '@/store/useBottomSheetStore';
 import { useGlobalModalStore } from '@/store/useGlobalModalStore';
 import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
+import { useTheme } from '@/hooks/useTheme';
 
 const MODIFIERS = [
   {
@@ -38,6 +39,7 @@ export default function MenuItemContent({ item, restaurantId, restaurantName }: 
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
 
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
   const { addItem, setActiveRestaurant } = useCartStore();
   const { closeGlobalBottomSheet } = useBottomSheetStore();
   const { openGlobalModal } = useGlobalModalStore();
@@ -58,9 +60,9 @@ export default function MenuItemContent({ item, restaurantId, restaurantName }: 
 
   return (
     <>
-      <BottomSheetScrollView>
+      <BottomSheetScrollView style={{ backgroundColor: isDark ? colors.bg : '#fff' }}>
         {/* Изображение */}
-        <View className="px-4 pt-2">
+        <View className="px-4" style={{ backgroundColor: isDark ? colors.bg : '#fff' }}>
           <Image
             source={{ uri: item.image }}
             style={{ height: 220, borderRadius: 16 }}
@@ -70,10 +72,11 @@ export default function MenuItemContent({ item, restaurantId, restaurantName }: 
           />
         </View>
 
-        <View className="px-5 pt-4 pb-4">
+        {/* Основная инфо секция */}
+        <View className="px-5 pt-4 pb-4" style={{ backgroundColor: isDark ? colors.bg : '#fff' }}>
           {/* Название и цена */}
           <View className="flex-row justify-between items-start mb-2">
-            <Text className="text-2xl font-bold flex-1 mr-3">{item.name}</Text>
+            <Text className="text-2xl font-bold flex-1 mr-3 dark:text-dark-text">{item.name}</Text>
             <Text className="text-xl font-bold" style={{ color: '#EA004B' }}>
               {basePrice} ₽
             </Text>
@@ -81,30 +84,46 @@ export default function MenuItemContent({ item, restaurantId, restaurantName }: 
 
           {/* Описание */}
           {item.description ? (
-            <Text className="text-stone-500 text-sm mb-4 leading-5">{item.description}</Text>
+            <Text className="text-stone-500 dark:text-dark-subtle text-sm mb-4 leading-5">{item.description}</Text>
           ) : (
-            <Text className="text-stone-400 text-sm mb-4 leading-5">Вкусное блюдо из нашего меню</Text>
+            <Text className="text-stone-400 dark:text-dark-subtle text-sm mb-4 leading-5">
+              Вкусное блюдо из нашего меню
+            </Text>
           )}
 
           {/* Инфо: вес, калории */}
-          <View className="flex-row gap-4 mb-5">
-            <View className="flex-row items-center gap-1.5">
-              <Icon set="materialCom" name="weight" size={16} color="#a8a29e" />
-              <Text className="text-stone-400 text-xs">{item.weight || '250 г'}</Text>
+          <View className="flex-row gap-4">
+            <View
+              className="flex-row items-center gap-1.5 px-3 py-2 rounded-full"
+              style={{ backgroundColor: isDark ? colors.elevated : '#f5f5f4' }}
+            >
+              <Icon set="materialCom" name="weight" size={16} color={isDark ? '#f59e0b' : '#a8a29e'} />
+              <Text className="text-stone-600 dark:text-dark-text text-xs font-semibold">{item.weight || '250 г'}</Text>
             </View>
-            <View className="flex-row items-center gap-1.5">
-              <Icon set="materialCom" name="fire" size={16} color="#a8a29e" />
-              <Text className="text-stone-400 text-xs">{item.calories || '320 ккал'}</Text>
+            <View
+              className="flex-row items-center gap-1.5 px-3 py-2 rounded-full"
+              style={{ backgroundColor: isDark ? colors.elevated : '#f5f5f4' }}
+            >
+              <Icon set="materialCom" name="fire" size={16} color={isDark ? '#ef4444' : '#a8a29e'} />
+              <Text className="text-stone-600 dark:text-dark-text text-xs font-semibold">
+                {item.calories || '320 ккал'}
+              </Text>
             </View>
           </View>
+        </View>
 
+        {/* Секция модификаторов */}
+        <View className="px-5 pt-2 pb-4" style={{ backgroundColor: isDark ? colors.bg : '#f9fafb' }}>
           {/* Модификаторы */}
           {MODIFIERS.map((modifier) => (
             <View key={modifier.id} className="mb-4">
-              <View className="flex-row items-center gap-2 mb-2">
-                <Text className="text-sm font-bold text-stone-700">{modifier.title}</Text>
+              <View className="flex-row items-center gap-2 mb-2 px-1">
+                <Text className="text-sm font-bold text-stone-700 dark:text-dark-text">{modifier.title}</Text>
                 {modifier.required && (
-                  <View className="px-2 py-0.5 rounded-full bg-pink-50">
+                  <View
+                    className="px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: isDark ? '#3d1a2e' : '#fce7f3' }}
+                  >
                     <Text className="text-xs font-bold" style={{ color: '#EA004B' }}>
                       Обязательно
                     </Text>
@@ -112,7 +131,13 @@ export default function MenuItemContent({ item, restaurantId, restaurantName }: 
                 )}
               </View>
 
-              <View className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+              <View
+                className="rounded-2xl border overflow-hidden"
+                style={{
+                  backgroundColor: isDark ? colors.surface : '#fff',
+                  borderColor: isDark ? colors.border : '#e5e7eb'
+                }}
+              >
                 {modifier.options.map((option, index) => {
                   const isSelected =
                     modifier.id === 'size' ? selectedSize === option.id : selectedExtras.includes(option.id);
@@ -129,19 +154,29 @@ export default function MenuItemContent({ item, restaurantId, restaurantName }: 
                         }
                       }}
                       className={`flex-row items-center justify-between p-3.5 ${
-                        index < modifier.options.length - 1 ? 'border-b border-stone-100' : ''
+                        index < modifier.options.length - 1 ? 'border-b border-stone-100 dark:border-dark-border' : ''
                       }`}
+                      style={{ backgroundColor: isSelected ? (isDark ? colors.elevated : '#fef2f2') : 'transparent' }}
                     >
-                      <Text className={`text-sm ${isSelected ? 'font-bold text-stone-800' : 'text-stone-600'}`}>
+                      <Text
+                        className={`text-sm ${isSelected ? 'font-bold text-stone-800 dark:text-dark-text' : 'text-stone-600 dark:text-dark-muted'}`}
+                      >
                         {option.label}
                       </Text>
 
                       <View className="flex-row items-center gap-3">
-                        {option.price > 0 && <Text className="text-xs text-stone-400">+{option.price} ₽</Text>}
+                        {option.price > 0 && (
+                          <Text
+                            className="text-xs font-semibold"
+                            style={{ color: isDark ? colors.textSecondary : '#737373' }}
+                          >
+                            +{option.price} ₽
+                          </Text>
+                        )}
 
                         <View
                           className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
-                            isSelected ? 'border-transparent' : 'border-stone-300'
+                            isSelected ? 'border-transparent' : 'border-stone-300 dark:border-dark-border'
                           }`}
                           style={isSelected ? { backgroundColor: '#EA004B' } : {}}
                         >
@@ -159,7 +194,7 @@ export default function MenuItemContent({ item, restaurantId, restaurantName }: 
 
       {/* Нижняя панель */}
       <View
-        className="flex-row items-center px-5 pt-3 border-t border-stone-200"
+        className="flex-row items-center px-5 pt-3 border-t border-stone-200 dark:border-dark-border bg-white dark:bg-dark-surface"
         style={{ paddingBottom: insets.bottom + 4 }}
       >
         {/* Счётчик */}
@@ -167,21 +202,21 @@ export default function MenuItemContent({ item, restaurantId, restaurantName }: 
           <TouchableOpacity
             disabled={itemsCount <= 1}
             activeOpacity={0.7}
-            className="rounded-full border border-stone-200 bg-stone-100 w-14 h-9 justify-center items-center"
+            className="rounded-full border border-stone-200 dark:border-dark-border bg-stone-100 dark:bg-dark-elevated w-14 h-9 justify-center items-center"
             onPress={() => setItemsCount((prev) => prev - 1)}
             style={{ opacity: itemsCount <= 1 ? 0.4 : 1 }}
           >
-            <Icon set="feather" name="minus" size={18} color="#57534e" />
+            <Icon set="feather" name="minus" size={18} color={isDark ? colors.text : '#57534e'} />
           </TouchableOpacity>
 
-          <Text className="font-bold text-lg w-5 text-center">{itemsCount}</Text>
+          <Text className="font-bold text-lg w-5 text-center dark:text-dark-text">{itemsCount}</Text>
 
           <TouchableOpacity
             activeOpacity={0.7}
-            className="rounded-full border border-stone-200 bg-stone-100 w-14 h-9 justify-center items-center"
+            className="rounded-full border border-stone-200 dark:border-dark-border bg-stone-100 dark:bg-dark-elevated w-14 h-9 justify-center items-center"
             onPress={() => setItemsCount((prev) => prev + 1)}
           >
-            <Icon set="feather" name="plus" size={18} color="#57534e" />
+            <Icon set="feather" name="plus" size={18} color={isDark ? colors.text : '#57534e'} />
           </TouchableOpacity>
         </View>
 

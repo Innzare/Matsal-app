@@ -7,7 +7,7 @@ export default function PopularBrands(props: any) {
 
   return (
     <View>
-      <Text className="text-2xl font-bold mb-4 px-6">{title}</Text>
+      <Text className="text-xl font-bold mb-4 px-6">{title}</Text>
 
       <FlatList
         data={list}

@@ -6,7 +6,8 @@ import PopularBrands from '@/components/PopularBrands';
 import RestaurantsListPreview from '@/components/RestaurantsListPreview';
 import { Text } from '@/components/Text';
 import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
-import { CATEGORIES, POPULAR_BRANDS, RESTAURANTS, RESTAURANTS2 } from '@/constants/resources';
+import { POPULAR_BRANDS, RESTAURANTS, RESTAURANTS2 } from '@/constants/resources';
+import { useTheme } from '@/hooks/useTheme';
 import { useBottomSheetStore } from '@/store/useBottomSheetStore';
 import { useGlobalModalStore } from '@/store/useGlobalModalStore';
 import { useOrdersStore } from '@/store/useOrdersStore';
@@ -67,6 +68,7 @@ const FOOD_TYPE = {
 };
 
 export default function SearchScreen() {
+  const { colors, isDark } = useTheme();
   const scrollY = useSharedValue(0);
   const scrollRef = useRef<Animated.ScrollView>(null);
   const flatScrollRef = useRef<FlatList<any>>(null);
@@ -94,14 +96,12 @@ export default function SearchScreen() {
   }, [activeOrdersCount]);
   const rippleStyle = useAnimatedStyle(() => ({
     opacity: 1 - rippleProgress.value,
-    transform: [{ scale: 1 + rippleProgress.value * 2.5 }],
+    transform: [{ scale: 1 + rippleProgress.value * 2.5 }]
   }));
   const { getActiveAddress } = useAddressesStore();
   const activeAddress = getActiveAddress();
 
   const isAndroid = Platform.OS === 'android';
-
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [foodType, setFoodType] = useState(FOOD_TYPE.FOOD);
@@ -219,13 +219,13 @@ export default function SearchScreen() {
   };
 
   const onAddressPress = () => {
-    // openGlobalModal(GLOBAL_MODAL_CONTENT.ADDRESSES, true);
-    openGlobalBottomSheet({
-      content: <Addresses />,
-      snaps: ['80%'],
-      isBackgroundScalable: true,
-      isIndicatorVisible: false
-    });
+    openGlobalModal(GLOBAL_MODAL_CONTENT.ADDRESSES, true, 'pageSheet');
+    // openGlobalBottomSheet({
+    //   content: <Addresses />,
+    //   snaps: ['90%'],
+    //   isBackgroundScalable: true,
+    //   isIndicatorVisible: false
+    // });
   };
 
   const onFoodTypeChange = (type: string) => {
@@ -234,7 +234,10 @@ export default function SearchScreen() {
   };
 
   const onCategoryPress = (categoryId: number) => {
-    setActiveCategoryId(activeCategoryId === categoryId ? null : categoryId);
+    router.push({
+      pathname: '/restaurants',
+      params: { categoryId: String(categoryId) }
+    });
   };
 
   const onSearchQueryChange = (value: string) => {
@@ -387,7 +390,7 @@ export default function SearchScreen() {
       }
     ],
     paddingTop: isScrollViewMinPosition.value ? 0 : HEADER_MAX_HEIGHT,
-    backgroundColor: isScrollViewMinPosition.value ? '#fff' : ''
+    backgroundColor: isScrollViewMinPosition.value ? colors.surface : ''
   }));
 
   // const androidScrollSpaces = useAnimatedStyle(() => ({
@@ -428,21 +431,25 @@ export default function SearchScreen() {
 
   const renderFoodTypeSection = () => {
     return (
-      <View className="flex-row bg-white rounded-t-2xl">
+      <View className="flex-row bg-white dark:bg-dark-surface rounded-t-2xl">
         <TouchableOpacity
           onPress={() => onFoodTypeChange(FOOD_TYPE.FOOD)}
           activeOpacity={0.7}
           className="flex-1 flex-row gap-3 items-center justify-center py-4 border-b-2"
           style={{
-            // backgroundColor: foodType === FOOD_TYPE.FOOD ? '#ea004b12' : 'transparent'
-            borderColor: foodType === FOOD_TYPE.FOOD ? '#EA004B' : '#ddd'
+            borderColor: foodType === FOOD_TYPE.FOOD ? '#EA004B' : colors.border
           }}
         >
-          <Icon set="ion" name="fast-food-outline" size={26} color={foodType === FOOD_TYPE.FOOD ? '#EA004B' : '#666'} />
+          <Icon
+            set="ion"
+            name="fast-food-outline"
+            size={26}
+            color={foodType === FOOD_TYPE.FOOD ? '#EA004B' : colors.iconMuted}
+          />
           <Text
             className="text-sm font-bold pt-0.5"
             style={{
-              color: foodType === FOOD_TYPE.FOOD ? '#EA004B' : '#666'
+              color: foodType === FOOD_TYPE.FOOD ? '#EA004B' : colors.textMuted
             }}
           >
             Еда
@@ -454,20 +461,19 @@ export default function SearchScreen() {
           activeOpacity={0.7}
           className="flex-1 flex-row gap-3 items-center justify-center py-4 border-b-2"
           style={{
-            // backgroundColor: foodType === FOOD_TYPE.GROCERIES ? '#ea004b12' : 'transparent'
-            borderColor: foodType === FOOD_TYPE.GROCERIES ? '#EA004B' : '#ddd'
+            borderColor: foodType === FOOD_TYPE.GROCERIES ? '#EA004B' : colors.border
           }}
         >
           <Icon
             set="material"
             name="storefront"
             size={24}
-            color={foodType === FOOD_TYPE.GROCERIES ? '#EA004B' : '#666'}
+            color={foodType === FOOD_TYPE.GROCERIES ? '#EA004B' : colors.iconMuted}
           />
           <Text
             className="text-sm font-bold pt-0.5"
             style={{
-              color: foodType === FOOD_TYPE.GROCERIES ? '#EA004B' : '#444'
+              color: foodType === FOOD_TYPE.GROCERIES ? '#EA004B' : colors.textMuted
             }}
           >
             Продукты
@@ -484,8 +490,8 @@ export default function SearchScreen() {
   const renderCategoriesSection = () => {
     return (
       <View className="mt-5">
-        <Categories activeCategoryId={activeCategoryId} onCategorySelect={onCategoryPress} />
-        <View className="py-1 bg-stone-100 my-6" />
+        <Categories onCategorySelect={onCategoryPress} />
+        <View className="py-1 bg-stone-100 dark:bg-dark-border my-6" />
       </View>
     );
   };
@@ -496,7 +502,7 @@ export default function SearchScreen() {
         return (
           <>
             <RestaurantsListPreview list={RESTAURANTS2} title="Закажите еще раз" />
-            <View className="py-1 bg-stone-100 my-8" />
+            <View className="py-1 bg-stone-100 dark:bg-dark-border my-8" />
           </>
         );
 
@@ -504,7 +510,7 @@ export default function SearchScreen() {
         return (
           <>
             <PopularBrands list={POPULAR_BRANDS} title="Популярные бренды" />
-            <View className="py-1 bg-stone-100 my-8" />
+            <View className="py-1 bg-stone-100 dark:bg-dark-border my-8" />
           </>
         );
 
@@ -512,7 +518,7 @@ export default function SearchScreen() {
         return (
           <>
             <RestaurantsListPreview list={RESTAURANTS} title="Рядом с вами" />
-            <View className="py-1 bg-stone-100 my-8" />
+            <View className="py-1 bg-stone-100 dark:bg-dark-border my-8" />
           </>
         );
 
@@ -520,7 +526,7 @@ export default function SearchScreen() {
         return (
           <>
             <RestaurantsListPreview list={RESTAURANTS2} title="Часто заказывают" />
-            <View className="py-1 bg-stone-100 my-8" />
+            <View className="py-1 bg-stone-100 dark:bg-dark-border my-8" />
           </>
         );
 
@@ -537,62 +543,9 @@ export default function SearchScreen() {
   };
 
   const renderContent = (type: string, index: number) => {
-    // if (index === 0) {
-    //   renderFoodTypeSection();
-    // }
-
-    if (foodType === FOOD_TYPE.GROCERIES) {
-      return (
-        <View className="px-6">
-          <Text>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus deleniti laudantium quaerat nam
-            dolorem aliquam a suscipit possimus optio unde repellendus dolorum adipisci ipsam, quidem iusto aliquid fuga
-            deserunt fugiat! Facere aperiam tempore perferendis fugiat, illum voluptates esse sit corrupti, expedita
-            enim dolor. Ad, iste rem vero voluptatum neque soluta aliquam corrupti quae velit quidem temporibus. Saepe
-            doloribus enim omnis. Reprehenderit maxime modi, harum dicta ea doloremque nobis repellendus doloribus
-            ipsam, totam voluptate voluptatum quasi porro, dolores repudiandae suscipit beatae qui pariatur at eligendi.
-            Eum, quod. Placeat expedita aliquid quo. Vitae distinctio autem saepe similique, aperiam impedit. Sit
-            tempore nesciunt exercitationem expedita, ea laboriosam laborum soluta labore adipisci esse a architecto,
-            voluptates voluptate quidem optio quasi alias eius est beatae! Reprehenderit dolorum saepe vero tenetur
-            nesciunt natus autem optio minus esse officiis fuga corrupti vitae minima nulla at beatae molestiae, eveniet
-            quasi?
-          </Text>
-        </View>
-      );
-    }
-
     let content = null;
 
-    // switch (type) {
-    //   // case CONTENT_SECTION.FOOD_TYPE:
-    //   //   return renderFoodTypeSection();
-
-    //   case CONTENT_SECTION.CATEGORIES:
-    //     return renderCategoriesSection();
-
-    //   case CONTENT_SECTION.ORDER_AGAIN:
-    //     return activeCategoryId === null && renderOrderVariantSection(CONTENT_SECTION.ORDER_AGAIN);
-
-    //   case CONTENT_SECTION.POPULAR_BRANDS:
-    //     return activeCategoryId === null && renderOrderVariantSection(CONTENT_SECTION.POPULAR_BRANDS);
-
-    //   case CONTENT_SECTION.NEAR:
-    //     return activeCategoryId === null && renderOrderVariantSection(CONTENT_SECTION.NEAR);
-
-    //   case CONTENT_SECTION.OFTEN_ORDER:
-    //     return activeCategoryId === null && renderOrderVariantSection(CONTENT_SECTION.OFTEN_ORDER);
-
-    //   case CONTENT_SECTION.ALL_RESTAURANTS:
-    //     return renderOrderVariantSection(CONTENT_SECTION.ALL_RESTAURANTS);
-
-    //   default:
-    //     return <View></View>;
-    // }
-
     switch (type) {
-      // case CONTENT_SECTION.FOOD_TYPE:
-      //   return renderFoodTypeSection();
-
       case CONTENT_SECTION.PROMO_BANNER:
         content = <PromoBanner />;
         break;
@@ -602,19 +555,19 @@ export default function SearchScreen() {
         break;
 
       case CONTENT_SECTION.ORDER_AGAIN:
-        content = activeCategoryId === null && renderOrderVariantSection(CONTENT_SECTION.ORDER_AGAIN);
+        content = renderOrderVariantSection(CONTENT_SECTION.ORDER_AGAIN);
         break;
 
       case CONTENT_SECTION.POPULAR_BRANDS:
-        content = activeCategoryId === null && renderOrderVariantSection(CONTENT_SECTION.POPULAR_BRANDS);
+        content = renderOrderVariantSection(CONTENT_SECTION.POPULAR_BRANDS);
         break;
 
       case CONTENT_SECTION.NEAR:
-        content = activeCategoryId === null && renderOrderVariantSection(CONTENT_SECTION.NEAR);
+        content = renderOrderVariantSection(CONTENT_SECTION.NEAR);
         break;
 
       case CONTENT_SECTION.OFTEN_ORDER:
-        content = activeCategoryId === null && renderOrderVariantSection(CONTENT_SECTION.OFTEN_ORDER);
+        content = renderOrderVariantSection(CONTENT_SECTION.OFTEN_ORDER);
         break;
 
       case CONTENT_SECTION.ALL_RESTAURANTS:
@@ -628,8 +581,8 @@ export default function SearchScreen() {
 
     return (
       <View
+        className="bg-white dark:bg-dark-surface"
         style={{
-          backgroundColor: '#fff',
           borderTopLeftRadius: index === 1 ? 15 : 0,
           borderTopRightRadius: index === 1 ? 15 : 0
         }}
@@ -643,16 +596,15 @@ export default function SearchScreen() {
     <View
       className="flex-1 relative"
       style={{
-        // backgroundColor: '#EA004B',
         paddingTop: insets.top
       }}
     >
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
       <LinearGradient
-        colors={['#EA004B', '#000', '#000']}
+        colors={isDark ? ['#EA004B', '#2a1228', '#121220'] : ['#EA004B', '#000', '#000']}
         start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1.3 }}
+        end={{ x: 0.5, y: isDark ? 0.85 : 0.85 }}
         style={{
           position: 'absolute',
           top: 0,
@@ -691,10 +643,7 @@ export default function SearchScreen() {
               <Icon set="ion" name="receipt-outline" size={22} color="white" />
               {activeOrdersCount > 0 && (
                 <View className="absolute top-1 right-1 w-3 h-3 items-center justify-center">
-                  <Animated.View
-                    style={rippleStyle}
-                    className="absolute w-3 h-3 rounded-full bg-orange-500"
-                  />
+                  <Animated.View style={rippleStyle} className="absolute w-3 h-3 rounded-full bg-orange-500" />
                   <View className="w-2.5 h-2.5 rounded-full bg-orange-500 border-[1.5px] border-white" />
                 </View>
               )}
@@ -726,14 +675,14 @@ export default function SearchScreen() {
             }}
             style={[searchInputScaleAnimatedStyle]}
           >
-            <Icon set="feather" name="search" />
+            <Icon set="feather" name="search" color={isDark ? colors.textSecondary : colors.iconMuted} />
             <TextInput
               pointerEvents="none"
-              placeholderTextColor="#777777"
+              placeholderTextColor={isDark ? colors.textSecondary : colors.placeholder}
               placeholder="Поиск ресторанов и кафе"
               value={searchQuery}
               onChangeText={onSearchQueryChange}
-              className="flex-1 py-3 leading-[17px]"
+              className="flex-1 py-3 leading-[17px] text-stone-800 dark:text-dark-text"
             />
           </AnimatedPressable>
 
@@ -762,7 +711,7 @@ export default function SearchScreen() {
         style={[
           {
             width: '100%',
-            height: 155,
+            height: 156,
             position: 'absolute',
             left: 0,
             top: 165
@@ -851,7 +800,7 @@ export default function SearchScreen() {
         renderItem={({ item, index }: any) => {
           // return <>{renderFoodTypeSection()}</>;
           return isLoading ? (
-            <View style={styles.newsCard}>
+            <View style={styles.newsCard} className="bg-white dark:bg-dark-surface">
               {/* Изображение */}
               <Skeleton height={200} borderRadius={12} style={{ marginBottom: 12 }} />
 
@@ -885,7 +834,7 @@ export default function SearchScreen() {
         initialNumToRender={1}
         // maxToRenderPerBatch={5}
         // windowSize={5}
-        className="rounded-t-2xl relative"
+        className="rounded-t-2xl relative bg-white dark:bg-dark-surface"
         style={[
           isAndroid
             ? {
@@ -908,10 +857,10 @@ export default function SearchScreen() {
         overScrollMode="never"
         // stickyHeaderIndices={[1]}
         contentContainerStyle={{
-          // backgroundColor: '#fff',
           borderTopLeftRadius: 30,
           borderTopRightRadius: 30,
-          paddingBottom: isAndroid ? 220 : 120
+          paddingBottom: isAndroid ? 220 : 120,
+          backgroundColor: colors.surface
         }}
         refreshControl={
           <RefreshControl
@@ -984,8 +933,7 @@ const styles = StyleSheet.create({
     padding: 8
   },
   newsCard: {
-    padding: 16,
-    backgroundColor: '#fff'
+    padding: 16
   },
   paymentCard: {
     padding: 16,

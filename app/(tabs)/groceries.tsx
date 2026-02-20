@@ -42,6 +42,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { GroceryProduct } from '@/constants/resources';
+import { useTheme } from '@/hooks/useTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -203,7 +204,10 @@ const SECTIONS = [
 
 function ProductPreviewCard({ product }: { product: GroceryProduct }) {
   return (
-    <View className="bg-white rounded-xl border border-stone-200 overflow-hidden" style={{ width: 140 }}>
+    <View
+      className="bg-white dark:bg-dark-surface rounded-xl border border-stone-200 dark:border-dark-border overflow-hidden"
+      style={{ width: 140 }}
+    >
       <Image
         source={{ uri: product.image }}
         style={{ width: '100%', height: 110 }}
@@ -211,11 +215,11 @@ function ProductPreviewCard({ product }: { product: GroceryProduct }) {
         cachePolicy="memory-disk"
       />
       <View className="p-2.5">
-        <Text className="font-bold text-sm text-stone-800">{product.price} ₽</Text>
-        <Text className="text-xs text-stone-600 mt-0.5" numberOfLines={2}>
+        <Text className="font-bold text-sm text-stone-800 dark:text-dark-text">{product.price} ₽</Text>
+        <Text className="text-xs text-stone-600 dark:text-dark-muted mt-0.5" numberOfLines={2}>
           {product.name}
         </Text>
-        <Text className="text-[11px] text-stone-400 mt-0.5">{product.weight}</Text>
+        <Text className="text-[11px] text-stone-400 dark:text-dark-muted mt-0.5">{product.weight}</Text>
       </View>
     </View>
   );
@@ -226,6 +230,7 @@ export default function Groceries() {
   const isFocused = useIsFocused();
   const router = useRouter();
   const flatScrollRef = useRef<FlatList<any>>(null);
+  const { colors, isDark } = useTheme();
 
   const { openGlobalBottomSheet } = useBottomSheetStore();
   const { openGlobalModal } = useGlobalModalStore();
@@ -243,7 +248,7 @@ export default function Groceries() {
   }, [activeOrdersCount]);
   const rippleStyle = useAnimatedStyle(() => ({
     opacity: 1 - rippleProgress.value,
-    transform: [{ scale: 1 + rippleProgress.value * 2.5 }],
+    transform: [{ scale: 1 + rippleProgress.value * 2.5 }]
   }));
   const { favoriteGroceries } = useFavoritesStore();
   const favoriteStores = useMemo(
@@ -309,7 +314,7 @@ export default function Groceries() {
   const onAddressPress = () => {
     openGlobalBottomSheet({
       content: <Addresses />,
-      snaps: ['80%'],
+      snaps: ['90%'],
       isBackgroundScalable: true,
       isIndicatorVisible: false
     });
@@ -365,7 +370,7 @@ export default function Groceries() {
   const scrollSpaces = useAnimatedStyle(() => ({
     transform: [{ translateY: isScrollViewMinPosition.value ? HEADER_MAX_HEIGHT : 0 }],
     paddingTop: isScrollViewMinPosition.value ? 0 : HEADER_MAX_HEIGHT,
-    backgroundColor: isScrollViewMinPosition.value ? '#fff' : ''
+    backgroundColor: isScrollViewMinPosition.value ? colors.surface : ''
   }));
 
   // === СЕКЦИИ ===
@@ -373,7 +378,7 @@ export default function Groceries() {
   const renderCategories = () => {
     return (
       <View className="mt-5">
-        <Text className="text-xl text-stone-800 text-left font-bold mb-3 px-6">Категории</Text>
+        <Text className="text-xl text-stone-800 dark:text-dark-text text-left font-bold mb-3 px-6">Категории</Text>
         <FlatList
           data={GROCERY_PAGE_CATEGORIES}
           horizontal
@@ -392,9 +397,9 @@ export default function Groceries() {
                     width: 60,
                     height: 60,
                     borderRadius: 14,
-                    backgroundColor: item.backgroundColor || '#f3f3f3',
+                    backgroundColor: item.backgroundColor || (isDark ? colors.elevated : '#f3f3f3'),
                     borderWidth: isActive ? 2 : 0,
-                    borderColor: isActive ? '#3d3d3d' : 'transparent',
+                    borderColor: isActive ? (isDark ? colors.text : '#3d3d3d') : 'transparent',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}
@@ -413,7 +418,7 @@ export default function Groceries() {
             );
           }}
         />
-        <View className="py-1 bg-stone-100 my-5" />
+        <View className="py-1 bg-stone-100 dark:bg-dark-border my-5" />
       </View>
     );
   };
@@ -423,9 +428,11 @@ export default function Groceries() {
     return (
       <View>
         <View className="flex-row items-center justify-between px-6 mb-3">
-          <Text className="text-xl text-stone-800 font-bold">Избранное</Text>
+          <Text className="text-xl text-stone-800 dark:text-dark-text font-bold">Избранное</Text>
           <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/(tabs)/favourites')}>
-            <Text className="text-sm font-semibold" style={{ color: '#16a34a' }}>Все</Text>
+            <Text className="text-sm font-semibold" style={{ color: '#16a34a' }}>
+              Все
+            </Text>
           </TouchableOpacity>
         </View>
         <FlatList
@@ -436,7 +443,7 @@ export default function Groceries() {
           contentContainerStyle={{ paddingHorizontal: 22, gap: 12 }}
           renderItem={({ item }) => <GroceryStoreItem data={item} variant="compact" />}
         />
-        <View className="py-1 bg-stone-100 my-5" />
+        <View className="py-1 bg-stone-100 dark:bg-dark-border my-5" />
       </View>
     );
   };
@@ -444,7 +451,9 @@ export default function Groceries() {
   const renderPopularShops = () => {
     return (
       <View>
-        <Text className="text-xl text-stone-800 text-left font-bold mb-3 px-6">Популярные магазины</Text>
+        <Text className="text-xl text-stone-800 dark:text-dark-text text-left font-bold mb-3 px-6">
+          Популярные магазины
+        </Text>
         <FlatList
           data={GROCERY_STORES}
           horizontal
@@ -453,7 +462,7 @@ export default function Groceries() {
           contentContainerStyle={{ paddingHorizontal: 22, gap: 12 }}
           renderItem={({ item }) => <GroceryStoreItem data={item} variant="compact" />}
         />
-        <View className="py-1 bg-stone-100 my-5" />
+        <View className="py-1 bg-stone-100 dark:bg-dark-border my-5" />
       </View>
     );
   };
@@ -462,7 +471,9 @@ export default function Groceries() {
     const stores = GROCERY_STORES.slice(0, 3);
     return (
       <View>
-        <Text className="text-xl text-stone-800 text-left font-bold mb-2 px-6">Магазины со скидками</Text>
+        <Text className="text-xl text-stone-800 dark:text-dark-text text-left font-bold mb-2 px-6">
+          Магазины со скидками
+        </Text>
         {stores.map((store) => {
           const products = GROCERY_PRODUCTS[store.id] || [];
           return (
@@ -481,7 +492,7 @@ export default function Groceries() {
             </View>
           );
         })}
-        <View className="py-1 bg-stone-100 my-4" />
+        <View className="py-1 bg-stone-100 dark:bg-dark-border my-4" />
       </View>
     );
   };
@@ -489,7 +500,7 @@ export default function Groceries() {
   const renderAllStores = () => {
     return (
       <View>
-        <Text className="text-xl text-stone-800 text-left font-bold mb-3 px-6">Все магазины</Text>
+        <Text className="text-xl text-stone-800 dark:text-dark-text text-left font-bold mb-3 px-6">Все магазины</Text>
 
         {/* Фильтры-чипсы */}
         <ScrollView
@@ -502,32 +513,39 @@ export default function Groceries() {
             onPress={() => setActiveCategoryId(null)}
             className="rounded-full px-4 py-2"
             style={{
-              backgroundColor: activeCategoryId === null ? '#1c1917' : '#f5f5f4'
+              backgroundColor:
+                activeCategoryId === null ? (isDark ? '#16a34a' : '#1c1917') : isDark ? colors.elevated : '#f5f5f4'
             }}
           >
-            <Text className="text-sm font-semibold" style={{ color: activeCategoryId === null ? '#fff' : '#57534e' }}>
+            <Text
+              className="text-sm font-semibold"
+              style={{ color: activeCategoryId === null ? '#fff' : isDark ? colors.textMuted : '#57534e' }}
+            >
               Все
             </Text>
           </TouchableOpacity>
 
-          {GROCERY_PAGE_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              activeOpacity={0.7}
-              onPress={() => setActiveCategoryId(activeCategoryId === cat.id ? null : cat.id)}
-              className="rounded-full px-4 py-2"
-              style={{
-                backgroundColor: activeCategoryId === cat.id ? '#1c1917' : '#f5f5f4'
-              }}
-            >
-              <Text
-                className="text-sm font-semibold"
-                style={{ color: activeCategoryId === cat.id ? '#fff' : '#57534e' }}
+          {GROCERY_PAGE_CATEGORIES.map((cat) => {
+            const isActive = activeCategoryId === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                activeOpacity={0.7}
+                onPress={() => setActiveCategoryId(isActive ? null : cat.id)}
+                className="rounded-full px-4 py-2"
+                style={{
+                  backgroundColor: isActive ? (isDark ? '#16a34a' : '#1c1917') : isDark ? colors.elevated : '#f5f5f4'
+                }}
               >
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  className="text-sm font-semibold"
+                  style={{ color: isActive ? '#fff' : isDark ? colors.textMuted : '#57534e' }}
+                >
+                  {cat.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
         {/* Список магазинов */}
@@ -569,8 +587,8 @@ export default function Groceries() {
 
     return (
       <View
+        className="bg-white dark:bg-dark-surface"
         style={{
-          backgroundColor: '#fff',
           borderTopLeftRadius: index === 0 ? 15 : 0,
           borderTopRightRadius: index === 0 ? 15 : 0
         }}
@@ -581,13 +599,13 @@ export default function Groceries() {
   };
 
   return (
-    <View className="flex-1 relative" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 relative bg-white dark:bg-dark-bg" style={{ paddingTop: insets.top }}>
       {isFocused ? <StatusBar translucent backgroundColor="transparent" barStyle="light-content" /> : null}
 
       <LinearGradient
-        colors={['#16a34a', '#000', '#000']}
+        colors={isDark ? ['#16a34a', '#162a22', '#121220'] : ['#16a34a', '#000', '#000']}
         start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1.3 }}
+        end={{ x: 0.5, y: isDark ? 0.8 : 1 }}
         style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, height: '100%' }}
       />
 
@@ -617,10 +635,7 @@ export default function Groceries() {
               <Icon set="ion" name="receipt-outline" size={22} color="white" />
               {activeOrdersCount > 0 && (
                 <View className="absolute top-1 right-1 w-3 h-3 items-center justify-center">
-                  <Animated.View
-                    style={rippleStyle}
-                    className="absolute w-3 h-3 rounded-full bg-orange-500"
-                  />
+                  <Animated.View style={rippleStyle} className="absolute w-3 h-3 rounded-full bg-orange-500" />
                   <View className="w-2.5 h-2.5 rounded-full bg-orange-500 border-[1.5px] border-white" />
                 </View>
               )}
@@ -653,12 +668,12 @@ export default function Groceries() {
             }}
             style={[searchInputScaleAnimatedStyle]}
           >
-            <Icon set="feather" name="search" />
+            <Icon set="feather" name="search" color={isDark ? colors.textSecondary : colors.iconMuted} />
             <TextInput
               pointerEvents="none"
-              placeholderTextColor="#777777"
+              placeholderTextColor={isDark ? colors.textSecondary : colors.placeholder}
               placeholder="Поиск продуктов и магазинов"
-              className="flex-1 py-3 leading-[17px]"
+              className="flex-1 py-3 leading-[17px] text-stone-800 dark:text-dark-text"
             />
           </AnimatedPressable>
         </Animated.View>
@@ -674,7 +689,7 @@ export default function Groceries() {
         keyExtractor={(_: any, index: number) => index.toString()}
         renderItem={({ item, index }: any) => renderContent(item, index)}
         initialNumToRender={1}
-        className="rounded-t-2xl relative"
+        className="rounded-t-2xl relative bg-white dark:bg-dark-surface"
         style={[
           isAndroid
             ? { transform: [{ translateY: 5 }], paddingTop: HEADER_MAX_HEIGHT, backgroundColor: 'transparent' }
@@ -690,15 +705,16 @@ export default function Groceries() {
         contentContainerStyle={{
           borderTopLeftRadius: 30,
           borderTopRightRadius: 30,
-          paddingBottom: isAndroid ? 220 : 120
+          paddingBottom: isAndroid ? 220 : 120,
+          backgroundColor: colors.surface
         }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="black"
-            colors={['black']}
-            progressBackgroundColor="black"
+            tintColor={isDark ? '#16a34a' : 'black'}
+            colors={[isDark ? '#16a34a' : 'black']}
+            progressBackgroundColor={isDark ? colors.surface : 'black'}
           />
         }
       />

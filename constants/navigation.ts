@@ -19,9 +19,9 @@ export const ROUTES: Route[] = [
     name: 'Еда',
     path: '/',
     icon: {
-      size: 25,
+      size: 23,
       set: 'ion',
-      name: 'fast-food-outline',
+      name: 'restaurant-outline',
       component: null
     }
   },

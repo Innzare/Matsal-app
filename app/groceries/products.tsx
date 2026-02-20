@@ -14,6 +14,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 import {
   Dimensions,
   FlatList,
@@ -44,6 +45,7 @@ function ProductDetailContent({
   const { closeGlobalBottomSheet } = useBottomSheetStore();
   const { openGlobalModal } = useGlobalModalStore();
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
 
   const similar = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 6);
   const totalPrice = product.price * itemsCount;
@@ -64,8 +66,8 @@ function ProductDetailContent({
 
   return (
     <View className="flex-1">
-      <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
-        <View className="items-center justify-center py-6" style={{ backgroundColor: '#f8f8f8' }}>
+      <ScrollView className="flex-1 bg-white dark:bg-dark-surface" showsVerticalScrollIndicator={false}>
+        <View className="items-center justify-center py-6" style={{ backgroundColor: isDark ? colors.elevated : '#f8f8f8' }}>
           <Image
             source={{ uri: product.image }}
             style={{ width: SCREEN_WIDTH - 80, height: 250 }}
@@ -76,19 +78,19 @@ function ProductDetailContent({
 
         <View className="px-5 pt-4 pb-2">
           <View className="flex-row justify-between items-start mb-1">
-            <Text className="text-lg font-bold text-stone-800 flex-1 mr-3">
+            <Text className="text-lg font-bold text-stone-800 dark:text-dark-text flex-1 mr-3">
               {product.name} {product.weight}
             </Text>
             <Text className="text-lg font-bold" style={{ color: '#16a34a' }}>
               {product.price} ₽
             </Text>
           </View>
-          <Text className="text-sm text-stone-400">{product.category}</Text>
+          <Text className="text-sm text-stone-400 dark:text-dark-muted">{product.category}</Text>
         </View>
 
         {similar.length > 0 && (
           <View className="mt-6 pb-10">
-            <Text className="font-bold text-base text-stone-800 px-5 mb-3">Похожие товары</Text>
+            <Text className="font-bold text-base text-stone-800 dark:text-dark-text px-5 mb-3">Похожие товары</Text>
             <FlatList
               data={similar}
               horizontal
@@ -96,8 +98,8 @@ function ProductDetailContent({
               keyExtractor={(item) => item.id.toString()}
               contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
               renderItem={({ item }) => (
-                <Pressable className="rounded-xl border border-stone-200 overflow-hidden" style={{ width: 140 }}>
-                  <View style={{ backgroundColor: '#f8f8f8' }}>
+                <Pressable className="rounded-xl border border-stone-200 dark:border-dark-border overflow-hidden" style={{ width: 140 }}>
+                  <View style={{ backgroundColor: isDark ? colors.elevated : '#f8f8f8' }}>
                     <Image
                       source={{ uri: item.image }}
                       style={{ width: '100%', height: 100 }}
@@ -106,8 +108,8 @@ function ProductDetailContent({
                     />
                   </View>
                   <View className="p-2">
-                    <Text className="font-bold text-sm">{item.price} ₽</Text>
-                    <Text className="text-xs text-stone-500 mt-0.5" numberOfLines={2}>
+                    <Text className="font-bold text-sm dark:text-dark-text">{item.price} ₽</Text>
+                    <Text className="text-xs text-stone-500 dark:text-dark-muted mt-0.5" numberOfLines={2}>
                       {item.name} {item.weight}
                     </Text>
                   </View>
@@ -119,26 +121,27 @@ function ProductDetailContent({
       </ScrollView>
 
       <View
-        className="flex-row items-center px-5 pt-3 border-t border-stone-200 bg-white"
+        className="flex-row items-center px-5 pt-3 border-t border-stone-200 dark:border-dark-border bg-white dark:bg-dark-surface"
         style={{ paddingBottom: insets.bottom + 4 }}
       >
         <View className="flex-row items-center gap-3 mr-4">
           <TouchableOpacity
             disabled={itemsCount <= 1}
             activeOpacity={0.7}
-            className="rounded-full border border-stone-200 bg-stone-100 w-14 h-9 justify-center items-center"
+            className="rounded-full border border-stone-200 dark:border-dark-border w-14 h-9 justify-center items-center"
+            style={{ backgroundColor: isDark ? colors.elevated : '#f5f5f4', opacity: itemsCount <= 1 ? 0.4 : 1 }}
             onPress={() => setItemsCount((prev) => prev - 1)}
-            style={{ opacity: itemsCount <= 1 ? 0.4 : 1 }}
           >
-            <Icon set="feather" name="minus" size={18} color="#57534e" />
+            <Icon set="feather" name="minus" size={18} color={isDark ? colors.text : '#57534e'} />
           </TouchableOpacity>
-          <Text className="font-bold text-lg w-5 text-center">{itemsCount}</Text>
+          <Text className="font-bold text-lg w-5 text-center dark:text-dark-text">{itemsCount}</Text>
           <TouchableOpacity
             activeOpacity={0.7}
-            className="rounded-full border border-stone-200 bg-stone-100 w-14 h-9 justify-center items-center"
+            className="rounded-full border border-stone-200 dark:border-dark-border w-14 h-9 justify-center items-center"
+            style={{ backgroundColor: isDark ? colors.elevated : '#f5f5f4' }}
             onPress={() => setItemsCount((prev) => prev + 1)}
           >
-            <Icon set="feather" name="plus" size={18} color="#57534e" />
+            <Icon set="feather" name="plus" size={18} color={isDark ? colors.text : '#57534e'} />
           </TouchableOpacity>
         </View>
 
@@ -164,6 +167,7 @@ export default function GroceryProducts() {
   const { openGlobalBottomSheet } = useBottomSheetStore();
   const { carts, addItem, setActiveRestaurant } = useCartStore();
   const { openGlobalModal } = useGlobalModalStore();
+  const { colors, isDark } = useTheme();
 
   const store = GROCERY_STORES.find((s) => s.id === Number(storeId));
   const allProducts = GROCERY_PRODUCTS[Number(storeId)] || [];
@@ -203,22 +207,22 @@ export default function GroceryProducts() {
   const title = activeCategory || store?.name || 'Товары';
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white dark:bg-dark-bg">
       {isFocused ? (
-        <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+        <StatusBar translucent backgroundColor="transparent" barStyle={isDark ? 'light-content' : 'dark-content'} />
       ) : null}
 
       {/* Хедер */}
-      <View className="bg-white border-b border-stone-100" style={{ paddingTop: insets.top }}>
+      <View className="bg-white dark:bg-dark-surface border-b border-stone-100 dark:border-dark-border" style={{ paddingTop: insets.top }}>
         <View className="h-[50px] flex-row items-center px-4">
           <TouchableOpacity
             onPress={() => router.back()}
             className="w-10 h-10 items-center justify-center"
             activeOpacity={0.7}
           >
-            <Icon set="feather" name="arrow-left" size={24} color="#333" />
+            <Icon set="feather" name="arrow-left" size={24} color={isDark ? colors.text : '#333'} />
           </TouchableOpacity>
-          <Text className="font-bold text-lg text-stone-800 flex-1 text-center mr-10" numberOfLines={1}>
+          <Text className="font-bold text-lg text-stone-800 dark:text-dark-text flex-1 text-center mr-10" numberOfLines={1}>
             {title}
           </Text>
         </View>
@@ -234,12 +238,12 @@ export default function GroceryProducts() {
             onPress={() => setActiveCategory(null)}
             className="rounded-full px-4 py-2"
             style={{
-              backgroundColor: activeCategory === null ? '#1c1917' : '#f5f5f4'
+              backgroundColor: activeCategory === null ? (isDark ? '#16a34a' : '#1c1917') : (isDark ? colors.surfaceAlt : '#f5f5f4')
             }}
           >
             <Text
               className="text-sm font-semibold"
-              style={{ color: activeCategory === null ? '#fff' : '#57534e' }}
+              style={{ color: activeCategory === null ? '#fff' : (isDark ? colors.text : '#57534e') }}
             >
               Все
             </Text>
@@ -252,12 +256,12 @@ export default function GroceryProducts() {
               onPress={() => setActiveCategory(activeCategory === cat.name ? null : cat.name)}
               className="rounded-full px-4 py-2"
               style={{
-                backgroundColor: activeCategory === cat.name ? '#1c1917' : '#f5f5f4'
+                backgroundColor: activeCategory === cat.name ? (isDark ? '#16a34a' : '#1c1917') : (isDark ? colors.surfaceAlt : '#f5f5f4')
               }}
             >
               <Text
                 className="text-sm font-semibold"
-                style={{ color: activeCategory === cat.name ? '#fff' : '#57534e' }}
+                style={{ color: activeCategory === cat.name ? '#fff' : (isDark ? colors.text : '#57534e') }}
               >
                 {cat.name}
               </Text>
@@ -276,10 +280,10 @@ export default function GroceryProducts() {
         renderItem={({ item }) => (
           <Pressable
             onPress={() => openProductDetail(item)}
-            className="bg-white rounded-xl border border-stone-200 overflow-hidden"
+            className="bg-white dark:bg-dark-surface rounded-xl border border-stone-200 dark:border-dark-border overflow-hidden"
             style={{ width: PRODUCT_CARD_WIDTH }}
           >
-            <View className="relative" style={{ backgroundColor: '#f8f8f8' }}>
+            <View className="relative" style={{ backgroundColor: isDark ? colors.elevated : '#f8f8f8' }}>
               <Image
                 source={{ uri: item.image }}
                 style={{ width: '100%', height: 130 }}
@@ -287,7 +291,7 @@ export default function GroceryProducts() {
                 cachePolicy="memory-disk"
               />
               <TouchableOpacity
-                className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-white items-center justify-center"
+                className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-white dark:bg-dark-surface items-center justify-center"
                 style={{
                   shadowColor: '#000',
                   shadowOpacity: 0.1,
@@ -301,12 +305,12 @@ export default function GroceryProducts() {
                   quickAddToCart(item);
                 }}
               >
-                <Icon set="feather" name="plus" size={18} color="#333" />
+                <Icon set="feather" name="plus" size={18} color={isDark ? colors.text : '#333'} />
               </TouchableOpacity>
             </View>
             <View className="px-2.5 py-2">
-              <Text className="font-bold text-[15px] text-stone-800">{item.price} ₽</Text>
-              <Text className="text-xs text-stone-600 mt-0.5" numberOfLines={2}>
+              <Text className="font-bold text-[15px] text-stone-800 dark:text-dark-text">{item.price} ₽</Text>
+              <Text className="text-xs text-stone-600 dark:text-dark-muted mt-0.5" numberOfLines={2}>
                 {item.name} {item.weight}
               </Text>
             </View>
@@ -314,8 +318,8 @@ export default function GroceryProducts() {
         )}
         ListEmptyComponent={
           <View className="items-center py-20">
-            <Icon set="feather" name="package" size={48} color="#d4d4d4" />
-            <Text className="text-stone-400 mt-4 text-base">Товары не найдены</Text>
+            <Icon set="feather" name="package" size={48} color={isDark ? colors.border : '#d4d4d4'} />
+            <Text className="text-stone-400 dark:text-dark-muted mt-4 text-base">Товары не найдены</Text>
           </View>
         }
       />
@@ -331,7 +335,7 @@ export default function GroceryProducts() {
         }, 0);
         return (
           <View
-            className="absolute left-0 bottom-0 right-0 px-5 pt-2 bg-white border-t border-stone-200 z-30"
+            className="absolute left-0 bottom-0 right-0 px-5 pt-2 bg-white dark:bg-dark-surface border-t border-stone-200 dark:border-dark-border z-30"
             style={{ paddingBottom: insets.bottom + 10 }}
           >
             <TouchableOpacity

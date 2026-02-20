@@ -8,18 +8,18 @@ type Props = {
   index: number;
   tabName: string;
   indexDecimal: SharedValue<number>;
+  isDark?: boolean;
   onPress: () => void;
 };
 
-export const TabItem: FC<Props> = ({ index, tabName, indexDecimal, onPress }) => {
+export const TabItem: FC<Props> = ({ index, tabName, indexDecimal, isDark, onPress }) => {
   const rTextStyle = useAnimatedStyle(() => {
-    // Three-point color interpolation creates smooth transitions between tabs
-    // Range [index-1, index, index+1] ensures current tab is white, others are gray
-    // This creates a "spotlight" effect as indexDecimal moves between tab indices
+    const activeColor = isDark ? '#e4e4e7' : '#000';
+    const inactiveColor = isDark ? '#71717a' : '#aaa';
     const color = interpolateColor(
       indexDecimal.value,
-      [index - 1, index, index + 1], // Input range: previous tab, current tab, next tab
-      ['#aaa', '#000', '#aaa'] // Output colors: inactive gray, active white, inactive gray
+      [index - 1, index, index + 1],
+      [inactiveColor, activeColor, inactiveColor]
     );
     return { color };
   });

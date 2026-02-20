@@ -4,11 +4,13 @@ import { RectButton } from 'react-native-gesture-handler';
 import { Icon } from './Icon';
 import Animated, { Easing, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { useRef } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 
 const ACTION_WIDTH = 60;
 
 export function SwipeRow({ children, onDelete }: { children: React.ReactNode; onDelete: () => void }) {
   const ref = useRef<any>(null);
+  const { colors, isDark } = useTheme();
 
   return (
     <Swipeable
@@ -16,9 +18,9 @@ export function SwipeRow({ children, onDelete }: { children: React.ReactNode; on
       childrenContainerStyle={{
         backgroundColor: 'white',
         overflow: 'hidden',
-        padding: 12,
+        padding: isDark ? 0 : 12,
         borderRadius: 8,
-        borderWidth: 1,
+        borderWidth: isDark ? 0 : 1,
         borderColor: '#E5E7EB',
         marginHorizontal: 18
       }}

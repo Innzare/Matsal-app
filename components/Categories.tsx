@@ -1,5 +1,6 @@
 import { Text } from '@/components/Text';
 import { CATEGORIES } from '@/constants/resources';
+import { useTheme } from '@/hooks/useTheme';
 import { Image } from 'expo-image';
 import React from 'react';
 import { Dimensions, FlatList, Pressable, View } from 'react-native';
@@ -10,6 +11,8 @@ const { width } = Dimensions.get('window');
 export default function Categories(props: any) {
   const { activeCategoryId, onCategorySelect, isTitleVisible = true, ...rest } = props;
 
+  const { isDark } = useTheme();
+
   const isActiveCategory = (categoryId: number) => {
     return activeCategoryId === categoryId;
   };
@@ -17,7 +20,7 @@ export default function Categories(props: any) {
   return (
     <View {...rest}>
       {isTitleVisible && (
-        <Text className="text-2xl text-stone-800 text-left font-bold mb-2 px-6 font-quicksand-bold">Категории</Text>
+        <Text className="text-xl text-stone-800 text-left font-bold mb-2 px-6 font-quicksand-bold">Категории</Text>
       )}
 
       <FlatList
@@ -39,7 +42,7 @@ export default function Categories(props: any) {
                   overflow: 'hidden',
                   borderWidth: isActiveCategory(item.id) ? 2 : 0,
                   borderColor: isActiveCategory(item.id) ? '#3d3d3d' : '',
-                  backgroundColor: '#f3f3f3'
+                  backgroundColor: isDark ? '#2e2e42' : '#f3f3f3'
                 }}
               />
 

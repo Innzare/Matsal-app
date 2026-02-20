@@ -13,10 +13,10 @@ import Animated, {
   interpolate,
   useAnimatedReaction,
   useAnimatedStyle,
-  useSharedValue,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated';
 import GlobalModal from '@/components/GlobalModal/GlobalModal';
+import { GlobalToast } from '@/components/GlobalToast/GlobalToast';
 import { useBottomSheetStore } from '@/store/useBottomSheetStore';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
@@ -29,6 +29,9 @@ import AnimatedSplashScreen from '@/components/AnimatedSplashScreen';
 // import Onboarding from '@/components/Onboarding/Onboarding';
 import { Onboarding } from '@/components/Onboarding/routes/onboarding';
 import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
+
+import { useColorScheme } from 'nativewind';
+import { useThemeStore } from '@/store/useThemeStore';
 
 const YANDEX_MAP_KEY = Constants.expoConfig?.extra?.YANDEX_MAP_KEY;
 
@@ -49,6 +52,23 @@ export default function RootLayout() {
   // const { isGlobalModalOpen, isMainContentScalable } = useGlobalModalStore();
   // const { isGlobalBottomSheetOpen, position } = useBottomSheetStore();
   const { checkAuth, hasSeenOnboarding, completeOnboarding } = useAuthStore();
+
+  // Тема
+  const { setColorScheme } = useColorScheme();
+  const { themeMode, loadTheme, isLoaded: isThemeLoaded } = useThemeStore();
+
+  useEffect(() => {
+    loadTheme();
+  }, []);
+
+  useEffect(() => {
+    if (!isThemeLoaded) return;
+    if (themeMode === 'system') {
+      setColorScheme('system');
+    } else {
+      setColorScheme(themeMode);
+    }
+  }, [themeMode, isThemeLoaded]);
 
   // 🆕 СОСТОЯНИЕ ДЛЯ SPLASH SCREEN
   const [showSplash, setShowSplash] = useState(true);
@@ -103,6 +123,7 @@ export default function RootLayout() {
     };
   });
 
+
   const handleSheetPosition = (pos: number) => {
     // pos: 0 = закрыт, max = открыт
     console.log('pos', pos);
@@ -155,9 +176,9 @@ export default function RootLayout() {
   // 🆕 ПОКАЗЫВАЕМ ЗАГРУЗКУ ПОСЛЕ SPLASH
   if (!appReady) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
+      <View className="flex-1 bg-white dark:bg-dark-bg items-center justify-center">
         <ActivityIndicator size="large" color="#EA004B" />
-        <Text className="mt-4 text-stone-600">Подготовка...</Text>
+        <Text className="mt-4 text-stone-600 dark:text-dark-muted">Подготовка...</Text>
       </View>
     );
   }
@@ -166,10 +187,13 @@ export default function RootLayout() {
     <GestureHandlerRootView>
       <KeyboardProvider>
         <View className="flex-1 bg-black">
-          <Animated.View className="flex-1 relative bg-white rounded-2xl overflow-hidden" style={contentStyle}>
+          <Animated.View
+            className="flex-1 relative bg-white dark:bg-dark-bg rounded-2xl overflow-hidden"
+            style={contentStyle}
+          >
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
 
-            <View className="flex-1 relative bg-white">
+            <View className="flex-1 relative bg-white dark:bg-dark-bg">
               <View className="flex-1">
                 {/* <Tabs screenOptions={{ headerShown: false, tabBarStyle: { display: 'none' } }} /> */}
                 {/* <Stack screenOptions={{ headerShown: false, animation: 'none'}} /> */}
@@ -225,16 +249,28 @@ export default function RootLayout() {
                       gestureDirection: 'horizontal'
                     }}
                   />
+
+                  <Stack.Screen
+                    name="settings"
+                    options={{
+                      gestureEnabled: true,
+                      animation: 'slide_from_right',
+                      animationDuration: 300,
+                      gestureDirection: 'horizontal'
+                    }}
+                  />
                 </Stack>
               </View>
 
               {/* <BottomNavigation /> */}
             </View>
+
           </Animated.View>
 
           {/* <CustomModal /> */}
           <GlobalModal />
           <GlobalBottomSheet onChangePostion={handleSheetPosition} />
+          <GlobalToast />
         </View>
       </KeyboardProvider>
     </GestureHandlerRootView>

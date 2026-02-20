@@ -4,11 +4,12 @@ import { Text as StyledText } from '@/components/Text';
 import { TopTabs } from '@/components/top-tabs';
 import { GROCERY_PRODUCTS, GROCERY_STORES, RESTAURANT_MENU, RESTAURANTS, RESTAURANTS2 } from '@/constants/resources';
 import type { GroceryProduct, MenuItem } from '@/constants/resources';
+import { useTheme } from '@/hooks/useTheme';
 import { useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   Keyboard,
   Platform,
@@ -36,9 +37,11 @@ function SearchResultItem({
   onPress: () => void;
   products?: (MenuItem | GroceryProduct)[];
 }) {
+  const { colors } = useTheme();
+
   return (
-    <View className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-      <Pressable onPress={onPress} className="flex-row items-center p-3 active:bg-stone-50">
+    <View className="bg-white dark:bg-dark-surface border border-stone-200 dark:border-dark-border rounded-2xl overflow-hidden">
+      <Pressable onPress={onPress} className="flex-row items-center p-3 active:bg-stone-50 dark:active:bg-dark-elevated">
         <View className="relative">
           <Image
             source={{ uri: item.src }}
@@ -57,10 +60,10 @@ function SearchResultItem({
         </View>
 
         <View className="flex-1 ml-3.5">
-          <StyledText className="font-bold text-[15px] text-stone-800" numberOfLines={1}>
+          <StyledText className="font-bold text-[15px] text-stone-800 dark:text-dark-text" numberOfLines={1}>
             {item.name}
           </StyledText>
-          <StyledText className="text-xs text-stone-500 mt-0.5">
+          <StyledText className="text-xs text-stone-500 dark:text-dark-muted mt-0.5">
             {item.deliveryTime} · от {item.minPrice} ₽
           </StyledText>
           <View className="flex-row items-center gap-1 mt-1">
@@ -71,8 +74,8 @@ function SearchResultItem({
           </View>
         </View>
 
-        <View className="w-9 h-9 rounded-full bg-stone-100 items-center justify-center">
-          <Icon set="material" name="keyboard-arrow-right" size={22} color="#a8a29e" />
+        <View className="w-9 h-9 rounded-full bg-stone-100 dark:bg-dark-elevated items-center justify-center">
+          <Icon set="material" name="keyboard-arrow-right" size={22} color={colors.textMuted} />
         </View>
       </Pressable>
 
@@ -84,14 +87,14 @@ function SearchResultItem({
           contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12, gap: 8 }}
         >
           {products.map((product) => (
-            <View key={product.id} className="items-center bg-stone-50 rounded-xl p-2" style={{ width: 90 }}>
+            <View key={product.id} className="items-center bg-stone-50 dark:bg-dark-elevated rounded-xl p-2" style={{ width: 90 }}>
               <Image
                 source={{ uri: product.image }}
                 style={{ width: 56, height: 56, borderRadius: 8 }}
                 contentFit="cover"
                 cachePolicy="memory-disk"
               />
-              <StyledText className="text-[10px] text-stone-700 font-semibold text-center mt-1" numberOfLines={2}>
+              <StyledText className="text-[10px] text-stone-700 dark:text-dark-text font-semibold text-center mt-1" numberOfLines={2}>
                 {product.name}
               </StyledText>
               <StyledText className="text-[10px] font-bold" style={{ color: '#EA004B' }}>
@@ -173,153 +176,153 @@ export default function Search() {
   }, []);
 
   const clearSearch = () => {
+    Keyboard.dismiss();
     setSearchQuery('');
     setRestaurantResults([]);
     setGroceryResults([]);
     setActiveQuery('');
     setIsSearchActive(false);
-    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  useEffect(() => {
-    if (isFocused && !isSearchActive) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
-    }
-  }, [isFocused]);
+  const { colors, isDark } = useTheme();
+
+  // Убрали автофокус - пользователь сам кликнет на input когда нужно
 
   if (isSearchActive) {
     return (
-      <View className="flex-1 bg-slate-50">
-        {isFocused ? <StatusBar barStyle="dark-content" /> : null}
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={-80}
+      >
+        <View className="flex-1 bg-slate-50 dark:bg-dark-bg">
+          {isFocused ? <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} /> : null}
 
-        <Tabs.Container
-          headerContainerStyle={{ shadowColor: 'transparent', paddingTop: insets.top }}
-          renderTabBar={(props) => <TopTabs {...props} />}
-          initialTabName="Рестораны"
-        >
-          <Tabs.Tab name="Рестораны" label="Рестораны">
-            <Tabs.ScrollView>
-              <View
-                className="px-4 pt-4 gap-3"
-                style={{ paddingBottom: insets.bottom + 140, paddingTop: insets.top + 10 }}
-              >
-                <View className="mx-2 mt-2 flex-row items-center justify-between mb-2">
-                  <Text className="font-bold text-lg text-stone-600">Результаты по «{searchQuery}»</Text>
-                  <TouchableOpacity onPress={clearSearch}>
-                    <Text className="text-sm font-bold" style={{ color: '#EA004B' }}>
-                      Сбросить
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {restaurantResults.map((item) => (
-                  <SearchResultItem
-                    key={item.id}
-                    item={item}
-                    onPress={() => router.push(`/restaurants/${item.id}`)}
-                    products={getRestaurantProducts(item.id)}
-                  />
-                ))}
-              </View>
-            </Tabs.ScrollView>
-          </Tabs.Tab>
-
-          <Tabs.Tab name="Продукты" label="Продукты">
-            <Tabs.ScrollView>
-              <View
-                className="px-4 pt-4 gap-3"
-                style={{ paddingBottom: insets.bottom + 140, paddingTop: insets.top + 10 }}
-              >
-                <View className="mx-4 mt-2 flex-row items-center justify-between mb-2">
-                  <Text className="font-bold text-lg text-stone-600">Результаты по «{searchQuery}»</Text>
-                  <TouchableOpacity onPress={clearSearch}>
-                    <Text className="text-sm font-bold" style={{ color: '#EA004B' }}>
-                      Сбросить
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {groceryResults.map((item) => (
-                  <SearchResultItem
-                    key={item.id}
-                    item={item}
-                    onPress={() => router.push(`/groceries/${item.id}`)}
-                    products={getGroceryProducts(item.id)}
-                  />
-                ))}
-              </View>
-            </Tabs.ScrollView>
-          </Tabs.Tab>
-        </Tabs.Container>
-
-        <View
-          className="absolute bottom-0 left-0 right-0 pb-2"
-          style={{ paddingBottom: insets.bottom + 70, zIndex: 100 }}
-          pointerEvents="box-none"
-        >
-          <View
-            className="mx-4 pl-5 bg-white border border-stone-300 flex-row items-center gap-3 rounded-full mb-1"
-            style={{
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.2,
-              shadowRadius: 8,
-              elevation: 8
-            }}
+          <Tabs.Container
+            headerContainerStyle={{ shadowColor: 'transparent', paddingTop: insets.top, backgroundColor: colors.bg }}
+            renderTabBar={(props) => <TopTabs {...props} />}
+            initialTabName="Рестораны"
           >
-            <Icon set="feather" name="search" />
-            <View className="flex-1 justify-center">
-              {searchQuery.length === 0 && (
-                <Text className="absolute" style={{ color: '#555' }}>
-                  Поиск ресторанов и кафе
-                </Text>
-              )}
-              <TextInput
-                ref={inputRef}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                onSubmitEditing={() => performSearch(searchQuery)}
-                returnKeyType="search"
-                className="py-5 leading-[17px] text-stone-800"
-                style={{ fontWeight: '700' }}
-              />
-            </View>
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => {
-                  if (isSearchActive) {
-                    clearSearch();
-                  } else {
-                    setSearchQuery('');
-                    inputRef.current?.focus();
-                  }
-                }}
-                activeOpacity={0.7}
-                className="w-8 h-8 rounded-full items-center justify-center bg-stone-200"
-                hitSlop={8}
-              >
-                <Icon set="feather" name="x" size={16} color="#78716c" />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              onPress={() => performSearch(searchQuery)}
-              activeOpacity={0.7}
-              disabled={searchQuery.trim().length === 0}
-              className="w-10 h-10 rounded-full items-center justify-center mr-2"
-              style={{ backgroundColor: searchQuery.trim().length > 0 ? '#EA004B' : '#d4d4d4' }}
+            <Tabs.Tab name="Рестораны" label="Рестораны">
+              <Tabs.ScrollView>
+                <View
+                  className="px-4 pt-4 gap-3"
+                  style={{ paddingBottom: insets.bottom + 140, paddingTop: insets.top + 10 }}
+                >
+                  <View className="mx-2 mt-2 flex-row items-center justify-between mb-2">
+                    <Text className="font-bold text-lg text-stone-600 dark:text-dark-muted">Результаты по «{searchQuery}»</Text>
+                    <TouchableOpacity onPress={clearSearch}>
+                      <Text className="text-sm font-bold" style={{ color: '#EA004B' }}>
+                        Сбросить
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {restaurantResults.map((item) => (
+                    <SearchResultItem
+                      key={item.id}
+                      item={item}
+                      onPress={() => router.push(`/restaurants/${item.id}`)}
+                      products={getRestaurantProducts(item.id)}
+                    />
+                  ))}
+                </View>
+              </Tabs.ScrollView>
+            </Tabs.Tab>
+
+            <Tabs.Tab name="Продукты" label="Продукты">
+              <Tabs.ScrollView>
+                <View
+                  className="px-4 pt-4 gap-3"
+                  style={{ paddingBottom: insets.bottom + 140, paddingTop: insets.top + 10 }}
+                >
+                  <View className="mx-4 mt-2 flex-row items-center justify-between mb-2">
+                    <Text className="font-bold text-lg text-stone-600 dark:text-dark-muted">Результаты по «{searchQuery}»</Text>
+                    <TouchableOpacity onPress={clearSearch}>
+                      <Text className="text-sm font-bold" style={{ color: '#EA004B' }}>
+                        Сбросить
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {groceryResults.map((item) => (
+                    <SearchResultItem
+                      key={item.id}
+                      item={item}
+                      onPress={() => router.push(`/groceries/${item.id}`)}
+                      products={getGroceryProducts(item.id)}
+                    />
+                  ))}
+                </View>
+              </Tabs.ScrollView>
+            </Tabs.Tab>
+          </Tabs.Container>
+
+          <View
+            className="absolute bottom-0 left-0 right-0 pb-2"
+            style={{ paddingBottom: insets.bottom + 70, zIndex: 100 }}
+          >
+            <View
+              className="mx-4 pl-5 bg-white dark:bg-dark-surface border border-stone-300 dark:border-dark-border flex-row items-center gap-3 rounded-full mb-1"
+              style={{
+                shadowColor: isDark ? 'transparent' : '#000',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: isDark ? 0 : 8
+              }}
             >
-              <Icon set="feather" name="arrow-right" size={20} color="white" />
-            </TouchableOpacity>
+              <Icon set="feather" name="search" color={isDark ? colors.textSecondary : colors.iconMuted} />
+              <View className="flex-1 justify-center">
+                {searchQuery.length === 0 && (
+                  <Text className="absolute" style={{ color: isDark ? colors.textSecondary : colors.placeholder }}>
+                    Поиск ресторанов и кафе
+                  </Text>
+                )}
+                <TextInput
+                  ref={inputRef}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={() => performSearch(searchQuery)}
+                  returnKeyType="search"
+                  className="py-5 leading-[17px] text-stone-800 dark:text-dark-text"
+                  style={{ fontWeight: '700' }}
+                />
+              </View>
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => {
+                    if (isSearchActive) {
+                      clearSearch();
+                    } else {
+                      clearSearch();
+                    }
+                  }}
+                  activeOpacity={0.7}
+                  className="w-8 h-8 rounded-full items-center justify-center bg-stone-200 dark:bg-dark-elevated"
+                  hitSlop={8}
+                >
+                  <Icon set="feather" name="x" size={16} color={colors.iconMuted} />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={() => performSearch(searchQuery)}
+                activeOpacity={0.7}
+                disabled={searchQuery.trim().length === 0}
+                className="w-10 h-10 rounded-full items-center justify-center mr-2"
+                style={{ backgroundColor: searchQuery.trim().length > 0 ? '#EA004B' : colors.switchTrackOff }}
+              >
+                <Icon set="feather" name="arrow-right" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-slate-50 dark:bg-dark-bg">
       {isFocused ? <StatusBar translucent backgroundColor="transparent" barStyle="light-content" /> : null}
 
       <View
@@ -328,13 +331,13 @@ export default function Search() {
           borderBottomRightRadius: 56,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.45,
+          shadowOpacity: isDark ? 0.6 : 0.45,
           shadowRadius: 10,
           elevation: 20
         }}
       >
         <LinearGradient
-          colors={['#EA004B', '#000', '#000']}
+          colors={isDark ? ['#EA004B', '#1e1e2e', '#1e1e2e'] : ['#EA004B', '#000', '#000']}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 3.3 }}
           style={{
@@ -358,9 +361,9 @@ export default function Search() {
             {recentSearches.length > 0 && (
               <View className="mx-4 mt-8 rounded-2xl overflow-hidden">
                 <View className="flex-row items-center justify-between mb-3">
-                  <Text className="font-bold text-lg text-stone-600">Недавно искали</Text>
+                  <Text className="font-bold text-lg text-stone-600 dark:text-dark-muted">Недавно искали</Text>
                   <TouchableOpacity onPress={() => setRecentSearches([])}>
-                    <Text className="text-sm" style={{ color: '#EA004B' }}>
+                    <Text className="text-sm font-semibold" style={{ color: '#EA004B' }}>
                       Очистить
                     </Text>
                   </TouchableOpacity>
@@ -372,14 +375,14 @@ export default function Search() {
                       key={index}
                       activeOpacity={0.7}
                       onPress={() => performSearch(item)}
-                      className={`bg-white border border-stone-300 rounded-full p-2 flex-row items-center px-4 py-3 ${
-                        index < recentSearches.length - 1 ? 'border-b border-stone-100' : ''
+                      className={`bg-white dark:bg-dark-surface border border-stone-300 dark:border-dark-border rounded-full p-2 flex-row items-center px-4 py-3 ${
+                        index < recentSearches.length - 1 ? 'border-b border-stone-100 dark:border-dark-border' : ''
                       }`}
                     >
-                      <Icon set="feather" name="clock" size={16} color="#a8a29e" />
-                      <Text className="flex-1 ml-3 font-bold text-sm">{item}</Text>
+                      <Icon set="feather" name="clock" size={16} color={colors.textMuted} />
+                      <Text className="flex-1 ml-3 font-bold text-sm dark:text-dark-text">{item}</Text>
                       <TouchableOpacity className="ml-2" onPress={() => removeRecent(index)} hitSlop={8}>
-                        <Icon set="feather" name="x" size={16} color="#d4d4d4" />
+                        <Icon set="feather" name="x" size={16} color={colors.iconMuted} />
                       </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
@@ -390,19 +393,19 @@ export default function Search() {
 
           <View className="pb-2">
             <View
-              className="mx-4 pl-5 bg-white border border-stone-300 flex-row items-center gap-3 rounded-full mb-1"
+              className="mx-4 pl-5 bg-white dark:bg-dark-surface border border-stone-300 dark:border-dark-border flex-row items-center gap-3 rounded-full mb-1"
               style={{
-                shadowColor: '#000',
+                shadowColor: isDark ? 'transparent' : '#000',
                 shadowOffset: { width: 0, height: 6 },
                 shadowOpacity: 0.2,
                 shadowRadius: 8,
-                elevation: 8
+                elevation: isDark ? 0 : 8
               }}
             >
-              <Icon set="feather" name="search" />
+              <Icon set="feather" name="search" color={isDark ? colors.textSecondary : colors.iconMuted} />
               <View className="flex-1 justify-center">
                 {searchQuery.length === 0 && (
-                  <Text className="absolute" style={{ color: '#555' }}>
+                  <Text className="absolute" style={{ color: isDark ? colors.textSecondary : colors.placeholder }}>
                     Поиск ресторанов и кафе
                   </Text>
                 )}
@@ -412,7 +415,7 @@ export default function Search() {
                   onChangeText={setSearchQuery}
                   onSubmitEditing={() => performSearch(searchQuery)}
                   returnKeyType="search"
-                  className="py-5 leading-[17px] text-stone-800"
+                  className="py-5 leading-[17px] text-stone-800 dark:text-dark-text"
                   style={{ fontWeight: '700' }}
                 />
               </View>
@@ -423,10 +426,10 @@ export default function Search() {
                     inputRef.current?.focus();
                   }}
                   activeOpacity={0.7}
-                  className="w-8 h-8 rounded-full items-center justify-center bg-stone-200"
+                  className="w-8 h-8 rounded-full items-center justify-center bg-stone-200 dark:bg-dark-elevated"
                   hitSlop={8}
                 >
-                  <Icon set="feather" name="x" size={16} color="#78716c" />
+                  <Icon set="feather" name="x" size={16} color={colors.iconMuted} />
                 </TouchableOpacity>
               )}
               <TouchableOpacity
@@ -434,7 +437,7 @@ export default function Search() {
                 activeOpacity={0.7}
                 disabled={searchQuery.trim().length === 0}
                 className="w-10 h-10 rounded-full items-center justify-center mr-2"
-                style={{ backgroundColor: searchQuery.trim().length > 0 ? '#EA004B' : '#d4d4d4' }}
+                style={{ backgroundColor: searchQuery.trim().length > 0 ? '#EA004B' : colors.switchTrackOff }}
               >
                 <Icon set="feather" name="arrow-right" size={20} color="white" />
               </TouchableOpacity>

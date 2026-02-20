@@ -8,9 +8,10 @@ type Props = {
   indexDecimal: SharedValue<number>;
   numberOfTabs: number;
   tabsHorizontalPadding: number;
+  isDark?: boolean;
 };
 
-export const TabIndicator: FC<Props> = ({ indexDecimal, numberOfTabs, tabsHorizontalPadding }) => {
+export const TabIndicator: FC<Props> = ({ indexDecimal, numberOfTabs, tabsHorizontalPadding, isDark }) => {
   // Screen width used for responsive tab calculations across different devices
   const { width } = useWindowDimensions();
 
@@ -32,7 +33,7 @@ export const TabIndicator: FC<Props> = ({ indexDecimal, numberOfTabs, tabsHorizo
   });
 
   // 1px height (h-px) creates subtle underline effect matching Threads design
-  return <Animated.View className="h-[2px] rounded-full bg-black" style={rIndicatorStyle} />;
+  return <Animated.View className="h-[2px] rounded-full bg-black dark:bg-dark-text" style={rIndicatorStyle} />;
 };
 
 // threads-home-header-tabs-animation 🔼

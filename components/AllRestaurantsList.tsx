@@ -4,11 +4,13 @@ import { Text } from '@/components/Text';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function AllRestaurantsList(props: any) {
   const { list = [], title = '' } = props;
 
   const router = useRouter();
+  const { colors, isDark } = useTheme();
 
   const onAllRestaurantsPress = () => {
     router.push('/restaurants');
@@ -22,10 +24,10 @@ export default function AllRestaurantsList(props: any) {
           className="flex-row items-center justify-between gap-2 mb-3 px-6"
           onPress={onAllRestaurantsPress}
         >
-          <Text className="text-2xl text-stone-800 text-left font-bold">{title}</Text>
+          <Text className="text-xl text-stone-800 dark:text-dark-text text-left font-bold">{title}</Text>
 
-          <View className="bg-stone-100 rounded-full w-[30px] h-[30px] justify-center items-center">
-            <Icon set="material" name="keyboard-arrow-right" color="gray" size={23} />
+          <View className="rounded-full w-[30px] h-[30px] justify-center items-center bg-stone-100 dark:bg-dark-elevated">
+            <Icon set="material" name="keyboard-arrow-right" color={isDark ? colors.textMuted : 'gray'} size={23} />
           </View>
         </TouchableOpacity>
       )}

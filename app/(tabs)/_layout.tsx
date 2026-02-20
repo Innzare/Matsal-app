@@ -29,9 +29,9 @@ export default function RootLayout() {
   // 🆕 ПОКАЗЫВАЕМ ЗАГРУЗКУ
   if (isLoading) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
+      <View className="flex-1 bg-white dark:bg-dark-bg items-center justify-center">
         <ActivityIndicator size="large" color="#EA004B" />
-        <Text className="mt-4 text-stone-600">Загрузка...</Text>
+        <Text className="mt-4 text-stone-600 dark:text-dark-muted">Загрузка...</Text>
       </View>
     );
   }
@@ -42,10 +42,10 @@ export default function RootLayout() {
   // }
 
   return (
-    <Animated.View entering={FadeIn.duration(300)} exiting={FadeOut.duration(200)} className="flex-1 relative bg-white">
+    <Animated.View entering={FadeIn.duration(300)} exiting={FadeOut.duration(200)} className="flex-1 relative bg-white dark:bg-dark-bg">
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
 
-      <View className="flex-1 relative bg-white">
+      <View className="flex-1 relative bg-white dark:bg-dark-bg">
         <View className="flex-1">
           <Tabs
             screenOptions={{

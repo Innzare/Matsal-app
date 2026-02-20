@@ -1,6 +1,7 @@
 import { Icon } from '@/components/Icon';
 import RestaurantItem from '@/components/RestaurantItem';
 import { Text } from '@/components/Text';
+import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
@@ -9,6 +10,7 @@ export default function RestaurantsListPreview(props: any) {
   const { title = '', list } = props;
 
   const router = useRouter();
+  const { isDark } = useTheme();
 
   const onAllRestaurantsPress = () => {
     router.push('/restaurants');
@@ -21,9 +23,9 @@ export default function RestaurantsListPreview(props: any) {
         className="flex-row items-center justify-between gap-2 mb-3 px-6"
         onPress={onAllRestaurantsPress}
       >
-        <Text className="text-2xl text-stone-800 text-left font-bold">{title}</Text>
+        <Text className="text-xl text-stone-800 text-left font-bold">{title}</Text>
 
-        <View className="bg-stone-100 rounded-full w-[30px] h-[30px] justify-center items-center">
+        <View className="rounded-full w-[30px] h-[30px] justify-center items-center bg-stone-100 dark:bg-dark-border">
           <Icon set="material" name="keyboard-arrow-right" color="gray" size={23} />
         </View>
       </TouchableOpacity>

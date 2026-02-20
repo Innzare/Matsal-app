@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/Users/innzare/Documents/Work/Matsal/Matsal-partner-app/app/\\(tabs\\)/_layout.tsx\" << 'ENDOFFILE'\nimport { Tabs } from 'expo-router';\nimport { BottomNavigation } from '@/components/BottomNavigation';\n\nexport default function TabsLayout\\(\\) {\n  return \\(\n    <>\n      <Tabs\n        screenOptions={{\n          headerShown: false,\n          tabBarStyle: { display: 'none' },\n          animation: 'fade',\n        }}\n      >\n        <Tabs.Screen name=\"index\" />\n        <Tabs.Screen name=\"orders\" />\n        <Tabs.Screen name=\"menu\" />\n        <Tabs.Screen name=\"profile\" />\n      </Tabs>\n      <BottomNavigation />\n    </>\n  \\);\n}\nENDOFFILE)"
+    ]
+  }
+}

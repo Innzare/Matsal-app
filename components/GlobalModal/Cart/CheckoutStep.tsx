@@ -8,6 +8,7 @@ import { useAddressesStore } from '@/store/useAddressesStore';
 import { useGlobalModalStore } from '@/store/useGlobalModalStore';
 import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { useTheme } from '@/hooks/useTheme';
 
 interface PaymentMethod {
   id: string;
@@ -50,6 +51,7 @@ interface CheckoutStepProps {
 
 export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }: CheckoutStepProps) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
   const { getTotal, getDeliveryPrice } = useCartStore();
   const { addresses, activeAddressId, setActiveAddressId } = useAddressesStore();
   const { openGlobalModal, closeGlobalModal } = useGlobalModalStore();
@@ -73,22 +75,22 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
     <View className="flex-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         {/* Адрес доставки */}
-        <Text className="text-sm font-bold text-stone-600 px-4 mt-4 mb-2">Адрес доставки</Text>
-        <View className="mx-4 bg-white rounded-2xl overflow-hidden border border-stone-200">
+        <Text className="text-sm font-bold text-stone-600 dark:text-dark-text px-4 mt-4 mb-2">Адрес доставки</Text>
+        <View className="mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border">
           <TouchableOpacity
             onPress={() => setShowAddressPicker(true)}
             activeOpacity={0.7}
             className="flex-row items-center justify-between p-4"
           >
             <View className="flex-row items-center gap-3 flex-1">
-              <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: accentColor + '15' }}>
+              <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: accentColor + (isDark ? '30' : '15') }}>
                 <Icon set="feather" name="map-pin" size={20} color={accentColor} />
               </View>
               <View className="flex-1">
                 {activeAddress ? (
                   <>
-                    <Text className="font-bold text-stone-700">{activeAddress.streetWithHouse}</Text>
-                    <Text className="text-stone-400 text-xs mt-0.5">
+                    <Text className="font-bold text-stone-700 dark:text-dark-text">{activeAddress.streetWithHouse}</Text>
+                    <Text className="text-stone-400 dark:text-dark-muted text-xs mt-0.5">
                       {activeAddress.city}
                       {activeAddress.entrance ? `, подъезд ${activeAddress.entrance}` : ''}
                       {activeAddress.floor ? `, этаж ${activeAddress.floor}` : ''}
@@ -96,17 +98,17 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
                     </Text>
                   </>
                 ) : (
-                  <Text className="text-stone-400">Выберите адрес</Text>
+                  <Text className="text-stone-400 dark:text-dark-muted">Выберите адрес</Text>
                 )}
               </View>
             </View>
-            <Icon set="feather" name="chevron-right" size={20} color="#a8a29e" />
+            <Icon set="feather" name="chevron-right" size={20} color={isDark ? colors.textMuted : '#a8a29e'} />
           </TouchableOpacity>
         </View>
 
         {/* Время доставки */}
-        <Text className="text-sm font-bold text-stone-600 px-4 mt-5 mb-2">Время доставки</Text>
-        <View className="mx-4 bg-white rounded-2xl overflow-hidden border border-stone-200">
+        <Text className="text-sm font-bold text-stone-600 dark:text-dark-text px-4 mt-5 mb-2">Время доставки</Text>
+        <View className="mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border">
           {DELIVERY_TIMES.map((time, index) => {
             const isSelected = selectedTime === time.id;
             return (
@@ -115,18 +117,18 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
                 activeOpacity={0.7}
                 onPress={() => setSelectedTime(time.id)}
                 className={`flex-row items-center justify-between p-4 ${
-                  index < DELIVERY_TIMES.length - 1 ? 'border-b border-stone-100' : ''
+                  index < DELIVERY_TIMES.length - 1 ? 'border-b border-stone-100 dark:border-dark-border' : ''
                 }`}
               >
                 <View>
-                  <Text className={`text-sm ${isSelected ? 'font-bold text-stone-800' : 'text-stone-600'}`}>
+                  <Text className={`text-sm ${isSelected ? 'font-bold text-stone-800 dark:text-dark-text' : 'text-stone-600 dark:text-dark-muted'}`}>
                     {time.label}
                   </Text>
-                  <Text className="text-xs text-stone-400 mt-0.5">{time.details}</Text>
+                  <Text className="text-xs text-stone-400 dark:text-dark-muted mt-0.5">{time.details}</Text>
                 </View>
                 <View
                   className="w-6 h-6 rounded-full border-2 items-center justify-center"
-                  style={{ borderColor: isSelected ? accentColor : '#d4d4d4' }}
+                  style={{ borderColor: isSelected ? accentColor : (isDark ? colors.border : '#d4d4d4') }}
                 >
                   {isSelected && <View className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: accentColor }} />}
                 </View>
@@ -136,8 +138,8 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
         </View>
 
         {/* Способ оплаты */}
-        <Text className="text-sm font-bold text-stone-600 px-4 mt-5 mb-2">Способ оплаты</Text>
-        <View className="mx-4 bg-white rounded-2xl overflow-hidden border border-stone-200">
+        <Text className="text-sm font-bold text-stone-600 dark:text-dark-text px-4 mt-5 mb-2">Способ оплаты</Text>
+        <View className="mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border">
           {PAYMENT_METHODS.map((method, index) => {
             const isSelected = selectedPayment === method.id;
             return (
@@ -146,23 +148,23 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
                 activeOpacity={0.7}
                 onPress={() => setSelectedPayment(method.id)}
                 className={`flex-row items-center justify-between p-4 ${
-                  index < PAYMENT_METHODS.length - 1 ? 'border-b border-stone-100' : ''
+                  index < PAYMENT_METHODS.length - 1 ? 'border-b border-stone-100 dark:border-dark-border' : ''
                 }`}
               >
                 <View className="flex-row items-center gap-3 flex-1">
-                  <View className="w-10 h-10 rounded-full bg-stone-100 items-center justify-center">
+                  <View className="w-10 h-10 rounded-full bg-stone-100 dark:bg-dark-elevated items-center justify-center">
                     <Icon set={method.icon.set} name={method.icon.name} size={22} color={method.icon.color} />
                   </View>
                   <View>
-                    <Text className={`text-sm ${isSelected ? 'font-bold text-stone-800' : 'text-stone-600'}`}>
+                    <Text className={`text-sm ${isSelected ? 'font-bold text-stone-800 dark:text-dark-text' : 'text-stone-600 dark:text-dark-muted'}`}>
                       {method.label}
                     </Text>
-                    <Text className="text-xs text-stone-400 mt-0.5">{method.details}</Text>
+                    <Text className="text-xs text-stone-400 dark:text-dark-muted mt-0.5">{method.details}</Text>
                   </View>
                 </View>
                 <View
                   className="w-6 h-6 rounded-full border-2 items-center justify-center"
-                  style={{ borderColor: isSelected ? accentColor : '#d4d4d4' }}
+                  style={{ borderColor: isSelected ? accentColor : (isDark ? colors.border : '#d4d4d4') }}
                 >
                   {isSelected && <View className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: accentColor }} />}
                 </View>
@@ -172,36 +174,36 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
         </View>
 
         {/* Комментарий */}
-        <Text className="text-sm font-bold text-stone-600 px-4 mt-5 mb-2">Комментарий</Text>
-        <View className="mx-4 bg-white rounded-2xl overflow-hidden border border-stone-200 px-4">
+        <Text className="text-sm font-bold text-stone-600 dark:text-dark-text px-4 mt-5 mb-2">Комментарий</Text>
+        <View className="mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border px-4">
           <TextInput
             value={comment}
             onChangeText={setComment}
             placeholder="Комментарий к заказу (необязательно)"
-            placeholderTextColor="#a8a29e"
+            placeholderTextColor={isDark ? colors.textMuted : '#a8a29e'}
             multiline
             numberOfLines={3}
-            className="py-3.5 text-sm"
+            className="py-3.5 text-sm dark:text-dark-text"
             style={{ minHeight: 60, textAlignVertical: 'top' }}
           />
         </View>
 
         {/* Итого */}
-        <Text className="text-sm font-bold text-stone-600 px-4 mt-5 mb-2">Итого</Text>
-        <View className="mx-4 bg-white rounded-2xl overflow-hidden border border-stone-200 p-4">
+        <Text className="text-sm font-bold text-stone-600 dark:text-dark-text px-4 mt-5 mb-2">Итого</Text>
+        <View className="mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border p-4">
           <View className="flex-row justify-between mb-2">
-            <Text className="text-stone-500 text-sm">Подытог</Text>
-            <Text className="font-bold text-sm text-stone-700">{subtotal} ₽</Text>
+            <Text className="text-stone-500 dark:text-dark-muted text-sm">Подытог</Text>
+            <Text className="font-bold text-sm text-stone-700 dark:text-dark-text">{subtotal} ₽</Text>
           </View>
           <View className="flex-row justify-between mb-2">
-            <Text className="text-stone-500 text-sm">Доставка</Text>
-            <Text className="font-bold text-sm" style={{ color: delivery === 0 ? '#16a34a' : '#57534e' }}>
+            <Text className="text-stone-500 dark:text-dark-muted text-sm">Доставка</Text>
+            <Text className="font-bold text-sm" style={{ color: delivery === 0 ? '#16a34a' : (isDark ? colors.text : '#57534e') }}>
               {delivery === 0 ? 'Бесплатно' : `${delivery} ₽`}
             </Text>
           </View>
-          <View className="h-[1px] bg-stone-100 my-2" />
+          <View className="h-[1px] bg-stone-100 dark:bg-dark-border my-2" />
           <View className="flex-row justify-between">
-            <Text className="font-bold text-stone-700">К оплате</Text>
+            <Text className="font-bold text-stone-700 dark:text-dark-text">К оплате</Text>
             <Text className="font-bold text-lg" style={{ color: accentColor }}>
               {total} ₽
             </Text>
@@ -210,7 +212,7 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
       </ScrollView>
 
       {/* Кнопка оплатить */}
-      <View className="px-5 pt-3 border-t border-stone-200 bg-white" style={{ paddingBottom: insets.bottom + 4 }}>
+      <View className="px-5 pt-3 border-t border-stone-200 dark:border-dark-border bg-white dark:bg-dark-surface" style={{ paddingBottom: insets.bottom + 4 }}>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onPlaceOrder}
@@ -236,17 +238,17 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
           <Animated.View
             entering={SlideInDown.duration(300)}
             exiting={SlideOutDown.duration(250)}
-            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl"
+            className="absolute bottom-0 left-0 right-0 bg-white dark:bg-dark-surface rounded-t-3xl"
             style={{ maxHeight: Dimensions.get('window').height * 0.6, paddingBottom: insets.bottom + 8 }}
           >
             <View className="items-center pt-3 pb-2">
-              <View className="w-10 h-1 rounded-full bg-stone-300" />
+              <View className="w-10 h-1 rounded-full bg-stone-300 dark:bg-dark-border" />
             </View>
 
-            <View className="flex-row items-center justify-between px-5 pb-3 border-b border-stone-100">
-              <Text className="text-lg font-bold">Адрес доставки</Text>
+            <View className="flex-row items-center justify-between px-5 pb-3 border-b border-stone-100 dark:border-dark-border">
+              <Text className="text-lg font-bold dark:text-dark-text">Адрес доставки</Text>
               <TouchableOpacity onPress={() => setShowAddressPicker(false)} activeOpacity={0.7}>
-                <Icon set="ant" name="close" size={16} color="#a8a29e" />
+                <Icon set="ant" name="close" size={16} color={isDark ? colors.textMuted : '#a8a29e'} />
               </TouchableOpacity>
             </View>
 
@@ -260,21 +262,21 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
                     onPress={() => onSelectAddress(address.id)}
                     className="flex-row items-center gap-3 p-3.5 mb-2 rounded-2xl border"
                     style={{
-                      borderColor: isActive ? accentColor : '#e7e5e4',
-                      backgroundColor: isActive ? accentColor + '10' : '#fff'
+                      borderColor: isActive ? accentColor : (isDark ? colors.border : '#e7e5e4'),
+                      backgroundColor: isActive ? accentColor + (isDark ? '30' : '10') : (isDark ? colors.elevated : '#fff')
                     }}
                   >
                     <View
                       className="w-10 h-10 rounded-full items-center justify-center"
-                      style={{ backgroundColor: isActive ? accentColor : '#f5f5f4' }}
+                      style={{ backgroundColor: isActive ? accentColor : (isDark ? colors.surface : '#f5f5f4') }}
                     >
-                      <Icon set="feather" name="map-pin" size={18} color={isActive ? '#fff' : '#a8a29e'} />
+                      <Icon set="feather" name="map-pin" size={18} color={isActive ? '#fff' : (isDark ? colors.textMuted : '#a8a29e')} />
                     </View>
                     <View className="flex-1">
-                      <Text className={`font-bold ${isActive ? 'text-stone-800' : 'text-stone-600'}`}>
+                      <Text className={`font-bold ${isActive ? 'text-stone-800 dark:text-dark-text' : 'text-stone-600 dark:text-dark-muted'}`}>
                         {address.streetWithHouse}
                       </Text>
-                      <Text className="text-stone-400 text-xs mt-0.5">
+                      <Text className="text-stone-400 dark:text-dark-muted text-xs mt-0.5">
                         {address.city}
                         {address.entrance ? `, подъезд ${address.entrance}` : ''}
                         {address.flat ? `, кв. ${address.flat}` : ''}
@@ -295,9 +297,9 @@ export default function CheckoutStep({ restaurantId, accentColor, onPlaceOrder }
                     openGlobalModal(GLOBAL_MODAL_CONTENT.ADD_ADDRESS);
                   }, 400);
                 }}
-                className="flex-row items-center gap-3 p-3.5 mb-2 rounded-2xl border border-dashed border-stone-300"
+                className="flex-row items-center gap-3 p-3.5 mb-2 rounded-2xl border border-dashed border-stone-300 dark:border-dark-border"
               >
-                <View className="w-10 h-10 rounded-full bg-stone-100 items-center justify-center">
+                <View className="w-10 h-10 rounded-full bg-stone-100 dark:bg-dark-elevated items-center justify-center">
                   <Icon set="feather" name="plus" size={20} color={accentColor} />
                 </View>
                 <Text className="font-bold" style={{ color: accentColor }}>

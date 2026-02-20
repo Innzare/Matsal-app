@@ -12,9 +12,11 @@ import { View } from 'react-native';
 import { Easing, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheetPositionWatcher } from '@/components/BottomSheetPositionWatcher';
+import { useTheme } from '@/hooks/useTheme';
 
 export function GlobalBottomSheet({ onChangePostion }: any) {
   const sheetRef = useRef<BottomSheet>(null);
+  const { colors, isDark } = useTheme();
   const {
     isGlobalBottomSheetOpen,
     isIndicatorVisible,
@@ -65,14 +67,13 @@ export function GlobalBottomSheet({ onChangePostion }: any) {
       enableDynamicSizing={snaps.length === 0}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      // onChange={handleSheetChange}
-      // handleIndicatorStyle={{ borderRadius: 20 }}
+      backgroundStyle={{ backgroundColor: colors.bg }}
       onClose={closeGlobalBottomSheet}
       handleComponent={
         isIndicatorVisible
           ? () => (
               <View className="pt-4 pb-6 items-center">
-                <View className="h-[4px] w-[40px] rounded-full bg-stone-700"></View>
+                <View className="h-[4px] w-[40px] rounded-full bg-stone-700 dark:bg-dark-text"></View>
               </View>
             )
           : null

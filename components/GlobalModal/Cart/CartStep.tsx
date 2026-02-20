@@ -8,11 +8,13 @@ import { useGlobalModalStore } from '@/store/useGlobalModalStore';
 import { GROCERY_STORES } from '@/constants/resources';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
+import { useTheme } from '@/hooks/useTheme';
 
 const GROCERY_IDS = new Set(GROCERY_STORES.map((s) => String(s.id)));
 
 function CartItemRow({ item, restaurantId, accentColor }: { item: CartItem; restaurantId: string; accentColor: string }) {
   const { updateQuantity, removeItem } = useCartStore();
+  const { colors, isDark } = useTheme();
   const modifiersTotal = item.modifiers.reduce((s, m) => s + m.price, 0);
   const itemTotal = (item.price + modifiersTotal) * item.quantity;
 
@@ -30,14 +32,14 @@ function CartItemRow({ item, restaurantId, accentColor }: { item: CartItem; rest
 
       <View className="flex-1 justify-between">
         <View className="flex-row justify-between items-start">
-          <Text className="font-bold text-stone-700 flex-1 mr-2">{item.name}</Text>
+          <Text className="font-bold text-stone-700 dark:text-dark-text flex-1 mr-2">{item.name}</Text>
           <TouchableOpacity onPress={() => removeItem(restaurantId, item.id)} activeOpacity={0.7}>
-            <Icon set="feather" name="trash-2" size={18} color="#a8a29e" />
+            <Icon set="feather" name="trash-2" size={18} color={isDark ? colors.textMuted : '#a8a29e'} />
           </TouchableOpacity>
         </View>
 
         {item.modifiers.length > 0 && (
-          <Text className="text-xs text-stone-400 mt-0.5">{item.modifiers.map((m) => m.label).join(', ')}</Text>
+          <Text className="text-xs text-stone-400 dark:text-dark-muted mt-0.5">{item.modifiers.map((m) => m.label).join(', ')}</Text>
         )}
 
         <View className="flex-row justify-between items-center mt-2">
@@ -49,19 +51,19 @@ function CartItemRow({ item, restaurantId, accentColor }: { item: CartItem; rest
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => updateQuantity(restaurantId, item.id, item.quantity - 1)}
-              className="w-8 h-8 border border-stone-200 rounded-full bg-stone-100 justify-center items-center"
+              className="w-8 h-8 border border-stone-200 dark:border-dark-border rounded-full bg-stone-100 dark:bg-dark-elevated justify-center items-center"
             >
-              <Icon set="feather" name="minus" size={16} color="#57534e" />
+              <Icon set="feather" name="minus" size={16} color={isDark ? colors.text : '#57534e'} />
             </TouchableOpacity>
 
-            <Text className="font-bold w-4 text-center">{item.quantity}</Text>
+            <Text className="font-bold w-4 text-center dark:text-dark-text">{item.quantity}</Text>
 
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => updateQuantity(restaurantId, item.id, item.quantity + 1)}
-              className="w-8 h-8 border border-stone-200 rounded-full bg-stone-100 justify-center items-center"
+              className="w-8 h-8 border border-stone-200 dark:border-dark-border rounded-full bg-stone-100 dark:bg-dark-elevated justify-center items-center"
             >
-              <Icon set="feather" name="plus" size={16} color="#57534e" />
+              <Icon set="feather" name="plus" size={16} color={isDark ? colors.text : '#57534e'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -78,6 +80,7 @@ interface CartStepProps {
 export default function CartStep({ restaurantId, onNext }: CartStepProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const { getTotal, getDeliveryPrice, getCartItems } = useCartStore();
   const items = getCartItems(restaurantId);
   const { closeGlobalModal } = useGlobalModalStore();
@@ -92,9 +95,9 @@ export default function CartStep({ restaurantId, onNext }: CartStepProps) {
   if (items.length === 0) {
     return (
       <View className="flex-1 items-center justify-center px-8">
-        <Icon set="feather" name="shopping-cart" size={48} color="#d4d4d4" />
-        <Text className="text-stone-400 text-center mt-4 text-lg">Корзина пуста</Text>
-        <Text className="text-stone-400 text-center text-sm mt-1">
+        <Icon set="feather" name="shopping-cart" size={48} color={isDark ? colors.border : '#d4d4d4'} />
+        <Text className="text-stone-400 dark:text-dark-muted text-center mt-4 text-lg">Корзина пуста</Text>
+        <Text className="text-stone-400 dark:text-dark-muted text-center text-sm mt-1">
           {isGrocery ? 'Добавьте товары из магазина' : 'Добавьте блюда из меню ресторана'}
         </Text>
 
@@ -120,12 +123,12 @@ export default function CartStep({ restaurantId, onNext }: CartStepProps) {
     <View className="flex-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         {/* Товары */}
-        <Text className="text-sm font-bold text-stone-600 px-4 mt-4 mb-2">Ваш заказ ({items.length})</Text>
-        <View className="mx-4 bg-white rounded-2xl overflow-hidden border border-stone-200">
+        <Text className="text-sm font-bold text-stone-600 dark:text-dark-text px-4 mt-4 mb-2">Ваш заказ ({items.length})</Text>
+        <View className="mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border">
           {items.map((item, index) => (
             <View key={item.id + JSON.stringify(item.modifiers)}>
               <CartItemRow item={item} restaurantId={restaurantId} accentColor={accentColor} />
-              {index < items.length - 1 && <View className="h-[1px] bg-stone-100 mx-4" />}
+              {index < items.length - 1 && <View className="h-[1px] bg-stone-100 dark:bg-dark-border mx-4" />}
             </View>
           ))}
         </View>
@@ -138,7 +141,7 @@ export default function CartStep({ restaurantId, onNext }: CartStepProps) {
             const path = isGrocery ? `/groceries/${restaurantId}` : `/restaurants/${restaurantId}`;
             setTimeout(() => router.push(path as any), 100);
           }}
-          className="mx-4 mt-3 bg-white rounded-2xl overflow-hidden border border-stone-200 flex-row items-center justify-center p-4 gap-2"
+          className="mx-4 mt-3 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border flex-row items-center justify-center p-4 gap-2"
         >
           <Icon set="feather" name="plus" size={20} color={accentColor} />
           <Text className="font-bold" style={{ color: accentColor }}>
@@ -147,15 +150,15 @@ export default function CartStep({ restaurantId, onNext }: CartStepProps) {
         </TouchableOpacity>
 
         {/* Промокод */}
-        <Text className="text-sm font-bold text-stone-600 px-4 mt-5 mb-2">Промокод</Text>
-        <View className="mx-4 bg-white rounded-2xl overflow-hidden border border-stone-200 flex-row items-center px-4">
-          <Icon set="materialCom" name="ticket-percent-outline" size={20} color="#a8a29e" />
+        <Text className="text-sm font-bold text-stone-600 dark:text-dark-text px-4 mt-5 mb-2">Промокод</Text>
+        <View className="mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border flex-row items-center px-4">
+          <Icon set="materialCom" name="ticket-percent-outline" size={20} color={isDark ? colors.textMuted : '#a8a29e'} />
           <TextInput
             value={promoCode}
             onChangeText={setPromoCode}
             placeholder="Введите промокод"
-            placeholderTextColor="#a8a29e"
-            className="flex-1 py-3.5 px-3 text-sm"
+            placeholderTextColor={isDark ? colors.textMuted : '#a8a29e'}
+            className="flex-1 py-3.5 px-3 text-sm dark:text-dark-text"
           />
           {promoCode.length > 0 && (
             <TouchableOpacity activeOpacity={0.7}>
@@ -167,21 +170,21 @@ export default function CartStep({ restaurantId, onNext }: CartStepProps) {
         </View>
 
         {/* Итого */}
-        <Text className="text-sm font-bold text-stone-600 px-4 mt-5 mb-2">Детали заказа</Text>
-        <View className="mx-4 bg-white rounded-2xl overflow-hidden border border-stone-200 p-4">
+        <Text className="text-sm font-bold text-stone-600 dark:text-dark-text px-4 mt-5 mb-2">Детали заказа</Text>
+        <View className="mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border border-stone-200 dark:border-dark-border p-4">
           <View className="flex-row justify-between mb-2">
-            <Text className="text-stone-500 text-sm">Подытог</Text>
-            <Text className="font-bold text-sm text-stone-700">{subtotal} ₽</Text>
+            <Text className="text-stone-500 dark:text-dark-muted text-sm">Подытог</Text>
+            <Text className="font-bold text-sm text-stone-700 dark:text-dark-text">{subtotal} ₽</Text>
           </View>
           <View className="flex-row justify-between mb-2">
-            <Text className="text-stone-500 text-sm">Доставка</Text>
-            <Text className="font-bold text-sm" style={{ color: delivery === 0 ? '#16a34a' : '#57534e' }}>
+            <Text className="text-stone-500 dark:text-dark-muted text-sm">Доставка</Text>
+            <Text className="font-bold text-sm" style={{ color: delivery === 0 ? '#16a34a' : (isDark ? colors.text : '#57534e') }}>
               {delivery === 0 ? 'Бесплатно' : `${delivery} ₽`}
             </Text>
           </View>
-          <View className="h-[1px] bg-stone-100 my-2" />
+          <View className="h-[1px] bg-stone-100 dark:bg-dark-border my-2" />
           <View className="flex-row justify-between">
-            <Text className="font-bold text-stone-700">Итого</Text>
+            <Text className="font-bold text-stone-700 dark:text-dark-text">Итого</Text>
             <Text className="font-bold text-lg" style={{ color: accentColor }}>
               {total} ₽
             </Text>
@@ -190,8 +193,8 @@ export default function CartStep({ restaurantId, onNext }: CartStepProps) {
 
         {delivery > 0 && (
           <View className="mx-4 mt-3 flex-row items-start gap-2 px-2">
-            <Icon set="feather" name="info" size={14} color="#a8a29e" />
-            <Text className="text-stone-400 text-xs flex-1">
+            <Icon set="feather" name="info" size={14} color={isDark ? colors.textMuted : '#a8a29e'} />
+            <Text className="text-stone-400 dark:text-dark-muted text-xs flex-1">
               Бесплатная доставка от 500 ₽. Добавьте ещё на {500 - subtotal} ₽
             </Text>
           </View>
@@ -199,7 +202,7 @@ export default function CartStep({ restaurantId, onNext }: CartStepProps) {
       </ScrollView>
 
       {/* Кнопка оформить */}
-      <View className="px-5 pt-3 border-t border-stone-200 bg-white" style={{ paddingBottom: insets.bottom + 4 }}>
+      <View className="px-5 pt-3 border-t border-stone-200 dark:border-dark-border bg-white dark:bg-dark-surface" style={{ paddingBottom: insets.bottom + 4 }}>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onNext}
