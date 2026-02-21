@@ -11,12 +11,14 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated';
+import { useTheme } from '@/hooks/useTheme';
 
 type PromoSlide = {
   id: string;
   title: string;
   subtitle: string;
   bgColor: string;
+  bgColorDark: string;
   icon: { set: string; name: string };
 };
 
@@ -26,6 +28,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     title: 'Бесплатная доставка',
     subtitle: 'На первый заказ от 500 ₽',
     bgColor: '#EA004B',
+    bgColorDark: '#a8003a',
     icon: { set: 'materialCom', name: 'truck-delivery-outline' }
   },
   {
@@ -33,6 +36,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     title: 'Скидка 20%',
     subtitle: 'На все блюда по выходным',
     bgColor: '#F97316',
+    bgColorDark: '#c45a11',
     icon: { set: 'materialCom', name: 'sale' }
   },
   {
@@ -40,6 +44,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     title: 'Кэшбэк 10%',
     subtitle: 'Баллами за каждый заказ',
     bgColor: '#0891B2',
+    bgColorDark: '#06748d',
     icon: { set: 'materialCom', name: 'cash-multiple' }
   }
 ];
@@ -53,11 +58,13 @@ const ACTIVE_DOT_WIDTH = 20;
 function AnimatedDot({
   index,
   scrollX,
-  snapInterval
+  snapInterval,
+  isDark
 }: {
   index: number;
   scrollX: SharedValue<number>;
   snapInterval: number;
+  isDark: boolean;
 }) {
   const rStyle = useAnimatedStyle(() => {
     const inputRange = [(index - 1) * snapInterval, index * snapInterval, (index + 1) * snapInterval];
@@ -75,7 +82,7 @@ function AnimatedDot({
         {
           height: DOT_SIZE,
           borderRadius: DOT_SIZE / 2,
-          backgroundColor: '#EA004B',
+          backgroundColor: isDark ? '#a8003a' : '#EA004B',
           marginHorizontal: 3
         },
         rStyle
@@ -92,6 +99,7 @@ export default function PromoBanner() {
   const activeIndexRef = useRef(0);
   const flatListRef = useRef<FlatList<PromoSlide>>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { isDark } = useTheme();
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -134,7 +142,7 @@ export default function PromoBanner() {
         width: SLIDE_WIDTH,
         height: 130,
         borderRadius: 20,
-        backgroundColor: item.bgColor,
+        backgroundColor: isDark ? item.bgColorDark : item.bgColor,
         padding: 20,
         flexDirection: 'row',
         alignItems: 'center',
@@ -184,7 +192,7 @@ export default function PromoBanner() {
 
       <View className="flex-row justify-center items-center mt-3">
         {PROMO_SLIDES.map((_, i) => (
-          <AnimatedDot key={i} index={i} scrollX={scrollX} snapInterval={SNAP_INTERVAL} />
+          <AnimatedDot key={i} index={i} scrollX={scrollX} snapInterval={SNAP_INTERVAL} isDark={isDark} />
         ))}
       </View>
     </View>

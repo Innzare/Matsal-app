@@ -1,4 +1,5 @@
 import { Icon } from '@/components/Icon';
+import { Skeleton } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { GROCERY_CATEGORIES, GROCERY_PRODUCTS, GROCERY_STORES, type GroceryProduct } from '@/constants/resources';
 import { GLOBAL_MODAL_CONTENT } from '@/constants/interface';
@@ -9,7 +10,7 @@ import { useGlobalModalStore } from '@/store/useGlobalModalStore';
 import { useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -35,7 +36,15 @@ const CATEGORY_CARD_SIZE = (SCREEN_WIDTH - 48 - 36) / 4;
 const PRODUCT_CARD_WIDTH = (SCREEN_WIDTH - 48 - 20) / 2.5;
 
 // === Карточка товара (горизонтальный скролл) ===
-function ProductCard({ product, onPress, onQuickAdd }: { product: GroceryProduct; onPress: () => void; onQuickAdd?: () => void }) {
+function ProductCard({
+  product,
+  onPress,
+  onQuickAdd
+}: {
+  product: GroceryProduct;
+  onPress: () => void;
+  onQuickAdd?: () => void;
+}) {
   const { colors, isDark } = useTheme();
 
   return (
@@ -119,7 +128,10 @@ function ProductDetailContent({
     <View className="flex-1">
       <ScrollView className="flex-1 bg-white dark:bg-dark-bg" showsVerticalScrollIndicator={false}>
         {/* Изображение */}
-        <View className="items-center justify-center py-6" style={{ backgroundColor: isDark ? colors.elevated : '#f8f8f8' }}>
+        <View
+          className="items-center justify-center py-6"
+          style={{ backgroundColor: isDark ? colors.elevated : '#f8f8f8' }}
+        >
           <Image
             source={{ uri: product.image }}
             style={{ width: SCREEN_WIDTH - 80, height: 250 }}
@@ -152,7 +164,10 @@ function ProductDetailContent({
               keyExtractor={(item) => item.id.toString()}
               contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
               renderItem={({ item }) => (
-                <Pressable className="rounded-xl border border-stone-200 dark:border-dark-border overflow-hidden" style={{ width: 140 }}>
+                <Pressable
+                  className="rounded-xl border border-stone-200 dark:border-dark-border overflow-hidden"
+                  style={{ width: 140 }}
+                >
                   <View style={{ backgroundColor: isDark ? colors.elevated : '#f8f8f8' }}>
                     <Image
                       source={{ uri: item.image }}
@@ -226,7 +241,7 @@ export default function GroceryStore() {
   const router = useRouter();
   const scrollY = useSharedValue(0);
   const isFocused = useIsFocused();
-  const { colors, isDark } = useTheme();
+  const { colors, isDark} = useTheme();
 
   const { openGlobalBottomSheet } = useBottomSheetStore();
   const { carts, addItem, setActiveRestaurant } = useCartStore();
@@ -240,6 +255,12 @@ export default function GroceryStore() {
 
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Группируем товары по категориям
   const productsByCategory = useMemo(() => {
@@ -283,7 +304,14 @@ export default function GroceryStore() {
 
   const openProductDetail = (product: GroceryProduct) => {
     openGlobalBottomSheet({
-      content: <ProductDetailContent product={product} products={products} storeId={String(id)} storeName={store?.name || ''} />,
+      content: (
+        <ProductDetailContent
+          product={product}
+          products={products}
+          storeId={String(id)}
+          storeName={store?.name || ''}
+        />
+      ),
       snaps: ['85%'],
       isBackgroundScalable: true,
       isIndicatorVisible: true
@@ -292,8 +320,8 @@ export default function GroceryStore() {
 
   if (!store) {
     return (
-      <View className="flex-1 bg-white dark:bg-dark-bg items-center justify-center">
-        <Text className="dark:text-dark-text">Магазин не найден</Text>
+      <View className="flex-1 bg-white items-center justify-center">
+        <Text>Магазин не найден</Text>
       </View>
     );
   }
@@ -306,7 +334,7 @@ export default function GroceryStore() {
 
       {/* Фиксированный хедер */}
       <Animated.View
-        className="absolute top-0 left-0 right-0 z-20 bg-white dark:bg-dark-surface border-b border-stone-100 dark:border-dark-border"
+        className="absolute top-0 left-0 right-0 z-20 bg-white border-b border-stone-100 dark:bg-dark-surface dark:border-dark-border items-center justify-center px-4"
         style={[{ paddingTop: insets.top }, headerOpacity]}
       >
         <View className="h-[50px] items-center justify-center">
@@ -335,13 +363,18 @@ export default function GroceryStore() {
             activeOpacity={0.7}
             onPress={() => toggleGroceryFavorite(Number(id))}
           >
-            <Icon set="ion" name={isFavorite ? 'heart' : 'heart-outline'} size={22} color={isFavorite ? 'red' : (isDark ? colors.text : '#333')} />
+            <Icon
+              set="ion"
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={22}
+              color={isFavorite ? 'red' : (isDark ? colors.text : '#333')}
+            />
           </TouchableOpacity>
           <TouchableOpacity className="w-10 h-10 items-center justify-center" activeOpacity={0.7}>
             <Icon set="feather" name="info" size={20} color={isDark ? colors.text : '#333'} />
           </TouchableOpacity>
           <TouchableOpacity className="w-10 h-10 items-center justify-center" activeOpacity={0.7}>
-            <Icon set="feather" name="shopping-bag" size={20} color={isDark ? colors.text : '#333'} />
+            <Icon set="feather" name="shopping-bag" size={20} color={isDark ? colors.text : "#333"} />
           </TouchableOpacity>
         </View>
       </View>
@@ -351,13 +384,50 @@ export default function GroceryStore() {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        pointerEvents={isLoading ? 'none' : 'auto'}
       >
+        {/* Скелетон при загрузке */}
+        {isLoading ? (
+          <View style={{ paddingTop: insets.top + 56, paddingHorizontal: 20, paddingBottom: 20 }}>
+            {/* Инфо о магазине */}
+            <View style={{ flexDirection: 'row', gap: 14, marginBottom: 16 }}>
+              <Skeleton width={140} height={140} borderRadius={12} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+              <View style={{ flex: 1, gap: 10 }}>
+                <Skeleton width="80%" height={22} borderRadius={8} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+                <Skeleton width="60%" height={16} borderRadius={8} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+                <Skeleton width="70%" height={16} borderRadius={8} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+                <Skeleton width={100} height={28} borderRadius={20} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+              </View>
+            </View>
+            {/* Поиск */}
+            <Skeleton width="100%" height={46} borderRadius={23} style={{ marginBottom: 20 }} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+            {/* Категории */}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <View key={i} style={{ alignItems: 'center', width: CATEGORY_CARD_SIZE }}>
+                  <Skeleton width={CATEGORY_CARD_SIZE} height={CATEGORY_CARD_SIZE} borderRadius={16} style={{ marginBottom: 6 }} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+                  <Skeleton width={CATEGORY_CARD_SIZE * 0.8} height={12} borderRadius={6} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+                </View>
+              ))}
+            </View>
+            {/* Кнопка "Все товары" */}
+            <Skeleton width="100%" height={60} borderRadius={16} style={{ marginBottom: 16 }} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+            {/* Секции товаров */}
+            <Skeleton width={140} height={22} borderRadius={8} style={{ marginBottom: 12 }} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} width={PRODUCT_CARD_WIDTH} height={180} borderRadius={12} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+              ))}
+            </View>
+          </View>
+        ) : (
+        <>
         {/* Инфо о магазине */}
         <View className="px-5 pb-4" style={{ paddingTop: insets.top + 56 }}>
           <View className="flex-row gap-3.5 mb-3.5">
             <Image
               source={{ uri: store.src }}
-              style={{ width: 140, aspectRatio: 1, borderRadius: 12, borderWidth: 1, borderColor: isDark ? colors.border : '#e7e5e4' }}
+              style={{ width: 140, aspectRatio: 1, borderRadius: 12, borderWidth: 1, borderColor: '#e7e5e4' }}
               contentFit="cover"
               cachePolicy="memory-disk"
             />
@@ -375,8 +445,8 @@ export default function GroceryStore() {
               <View className="flex-row items-center justify-between py-2">
                 <View className="flex-row items-center gap-2">
                   <Icon set="materialCom" name="clock-fast" size={16} color={isDark ? colors.textMuted : '#666'} />
-                  <Text className="text-sm text-stone-700 dark:text-dark-text">
-                    Доставка <Text className="font-bold">{store.deliveryTime}</Text>
+                  <Text className="text-sm text-stone-700 dark:text-dark-secondary">
+                    Доставка <Text className="font-bold dark:text-dark-text">{store.deliveryTime}</Text>
                   </Text>
                 </View>
               </View>
@@ -398,7 +468,7 @@ export default function GroceryStore() {
 
         {/* Поиск */}
         <View className="px-5 pb-4">
-          <View className="flex-row items-center rounded-full px-3.5 py-3 gap-2.5 border" style={{ backgroundColor: isDark ? colors.surfaceAlt : '#f5f5f4', borderColor: isDark ? colors.border : '#e5e7eb' }}>
+          <View className="flex-row items-center bg-stone-100 rounded-full px-3.5 py-3 gap-2.5 border border-stone-300 dark:bg-dark-elevated dark:border-dark-border">
             <Icon set="feather" name="search" size={20} color={isDark ? colors.textMuted : '#a8a29e'} />
             <TextInput
               value={searchQuery}
@@ -409,7 +479,7 @@ export default function GroceryStore() {
             />
             {searchQuery.length > 0 && (
               <Pressable onPress={() => setSearchQuery('')}>
-                <Icon set="ant" name="close" size={16} color={isDark ? colors.textMuted : '#a8a29e'} />
+                <Icon set="ant" name="close" size={16} color="#a8a29e" />
               </Pressable>
             )}
           </View>
@@ -439,8 +509,8 @@ export default function GroceryStore() {
                         cachePolicy="memory-disk"
                       />
                       <TouchableOpacity
-                        className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-white dark:bg-dark-surface items-center justify-center"
-                        style={{ shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}
+                        className="absolute bottom-2 right-2 w-8 h-8 rounded-full items-center justify-center"
+                        style={{ backgroundColor: isDark ? colors.surface : '#fff', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}
                         onPress={(e) => {
                           e.stopPropagation();
                           quickAddToCart(product);
@@ -449,7 +519,7 @@ export default function GroceryStore() {
                         <Icon set="feather" name="plus" size={18} color={isDark ? colors.text : '#333'} />
                       </TouchableOpacity>
                     </View>
-                    <View className="p-2.5">
+                    <View className="p-2.5" style={{ backgroundColor: isDark ? colors.surface : '#fff' }}>
                       <Text className="font-bold text-[15px] dark:text-dark-text">{product.price} ₽</Text>
                       <Text className="text-xs text-stone-600 dark:text-dark-muted mt-0.5" numberOfLines={2}>
                         {product.name} {product.weight}
@@ -474,7 +544,9 @@ export default function GroceryStore() {
                   <Pressable
                     key={cat.id}
                     className="items-center w-[100%] max-w-[23%]"
-                    onPress={() => router.push(`/groceries/products?storeId=${id}&categoryName=${encodeURIComponent(cat.name)}`)}
+                    onPress={() =>
+                      router.push(`/groceries/products?storeId=${id}&categoryName=${encodeURIComponent(cat.name)}`)
+                    }
                   >
                     <View
                       className="w-full rounded-2xl items-center justify-center mb-1.5"
@@ -490,7 +562,7 @@ export default function GroceryStore() {
                         cachePolicy="memory-disk"
                       />
                     </View>
-                    <Text className="text-xs font-semibold text-stone-700 dark:text-dark-text text-center" numberOfLines={2}>
+                    <Text className="text-xs font-semibold text-stone-700 dark:text-dark-secondary text-center" numberOfLines={2}>
                       {cat.name}
                     </Text>
                   </Pressable>
@@ -542,7 +614,7 @@ export default function GroceryStore() {
             </TouchableOpacity>
 
             {/* Разделитель */}
-            <View className="h-2 bg-stone-100 dark:bg-dark-elevated mb-3" />
+            <View className="h-2 bg-stone-100 dark:bg-dark-surface mb-3" />
 
             {/* Секции товаров по категориям */}
             {categoryNames.map((categoryName) => {
@@ -553,7 +625,11 @@ export default function GroceryStore() {
                     <Text className="font-bold text-lg text-stone-900 dark:text-dark-text">{categoryName}</Text>
                     <TouchableOpacity
                       activeOpacity={0.7}
-                      onPress={() => router.push(`/groceries/products?storeId=${id}&categoryName=${encodeURIComponent(categoryName)}`)}
+                      onPress={() =>
+                        router.push(
+                          `/groceries/products?storeId=${id}&categoryName=${encodeURIComponent(categoryName)}`
+                        )
+                      }
                     >
                       <Text className="text-sm font-semibold" style={{ color: '#16a34a' }}>
                         Все
@@ -567,12 +643,20 @@ export default function GroceryStore() {
                     showsHorizontalScrollIndicator={false}
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-                    renderItem={({ item }) => <ProductCard product={item} onPress={() => openProductDetail(item)} onQuickAdd={() => quickAddToCart(item)} />}
+                    renderItem={({ item }) => (
+                      <ProductCard
+                        product={item}
+                        onPress={() => openProductDetail(item)}
+                        onQuickAdd={() => quickAddToCart(item)}
+                      />
+                    )}
                   />
                 </View>
               );
             })}
           </>
+        )}
+        </>
         )}
       </Animated.ScrollView>
 

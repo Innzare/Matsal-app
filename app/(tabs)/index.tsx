@@ -714,11 +714,11 @@ export default function SearchScreen() {
             height: 156,
             position: 'absolute',
             left: 0,
-            top: 165
+            top: 143
           }
           // citySilhouteeStyle
         ]}
-        source={require('@/assets/images/grozny2.png')}
+        source={require('@/assets/images/grozny3.png')}
         transition={200}
         cachePolicy="memory-disk"
         contentFit="cover"
@@ -802,14 +802,14 @@ export default function SearchScreen() {
           return isLoading ? (
             <View style={styles.newsCard} className="bg-white dark:bg-dark-surface">
               {/* Изображение */}
-              <Skeleton height={200} borderRadius={12} style={{ marginBottom: 12 }} />
+              <Skeleton height={200} borderRadius={12} style={{ marginBottom: 12 }} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
 
               {/* Категория */}
-              <Skeleton width={80} height={24} borderRadius={12} style={{ marginBottom: 8 }} />
+              <Skeleton width={80} height={24} borderRadius={12} style={{ marginBottom: 8 }} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
 
               {/* Заголовок */}
-              <Skeleton width="100%" height={20} style={{ marginBottom: 8 }} />
-              <Skeleton width="80%" height={20} style={{ marginBottom: 12 }} />
+              <Skeleton width="100%" height={20} style={{ marginBottom: 8 }} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
+              <Skeleton width="80%" height={20} style={{ marginBottom: 12 }} colors={isDark ? ['#2e2e42', '#3a3a52', '#2e2e42'] : undefined} />
             </View>
           ) : (
             renderContent(item, index)

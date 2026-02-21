@@ -154,10 +154,10 @@ const ORDERS: Order[] = [
   }
 ];
 
-const STATUS_MAP: Record<string, { label: string; color: string; bgLight: string; bgDark: string }> = {
-  delivered: { label: 'Доставлен', color: '#16a34a', bgLight: '#f0fdf4', bgDark: '#1a2a24' },
-  in_progress: { label: 'В пути', color: '#ea580c', bgLight: '#fff7ed', bgDark: '#2d2416' },
-  cancelled: { label: 'Отменён', color: '#dc2626', bgLight: '#fef2f2', bgDark: '#2d1820' }
+const STATUS_MAP: Record<string, { label: string; colorLight: string; colorDark: string; bgLight: string; bgDark: string }> = {
+  delivered: { label: 'Доставлен', colorLight: '#16a34a', colorDark: '#16a34a', bgLight: '#f0fdf4', bgDark: '#1a2a24' },
+  in_progress: { label: 'В пути', colorLight: '#ea580c', colorDark: '#38bdf8', bgLight: '#fff7ed', bgDark: '#0c1f2e' },
+  cancelled: { label: 'Отменён', colorLight: '#dc2626', colorDark: '#dc2626', bgLight: '#fef2f2', bgDark: '#2d1820' }
 };
 
 const TRACKING_ICONS: Record<string, { set: string; name: string }> = {
@@ -177,6 +177,8 @@ function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
   const activeIndex = steps.findIndex((s) => !s.done);
   const currentStep = activeIndex === -1 ? steps.length - 1 : activeIndex;
   const { colors, isDark } = useTheme();
+  const activeColor = isDark ? '#38bdf8' : '#ea580c';
+  const activeBg = isDark ? '#0c1f2e' : '#fff7ed';
 
   return (
     <View className="mt-1 mb-1">
@@ -193,16 +195,16 @@ function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
               <View
                 className="w-7 h-7 rounded-full items-center justify-center"
                 style={{
-                  backgroundColor: isDone ? '#ea580c' : isCurrent ? (isDark ? '#2d2416' : '#fff7ed') : (isDark ? colors.elevated : '#f5f5f4'),
+                  backgroundColor: isDone ? activeColor : isCurrent ? activeBg : (isDark ? colors.elevated : '#f5f5f4'),
                   borderWidth: isCurrent && !isDone ? 2 : 0,
-                  borderColor: '#ea580c'
+                  borderColor: activeColor
                 }}
               >
                 <Icon
                   set={icon.set}
                   name={icon.name}
                   size={14}
-                  color={isDone ? '#fff' : isCurrent ? '#ea580c' : (isDark ? colors.textMuted : '#a8a29e')}
+                  color={isDone ? '#fff' : isCurrent ? activeColor : (isDark ? colors.textMuted : '#a8a29e')}
                 />
               </View>
               {!isLast && (
@@ -210,7 +212,7 @@ function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
                   style={{
                     width: 2,
                     height: 28,
-                    backgroundColor: isDone ? '#ea580c' : (isDark ? colors.border : '#e7e5e4')
+                    backgroundColor: isDone ? activeColor : (isDark ? colors.border : '#e7e5e4')
                   }}
                 />
               )}
@@ -229,8 +231,8 @@ function TrackingTimeline({ steps }: { steps: TrackingStep[] }) {
               )}
               {isCurrent && !isDone && (
                 <View className="flex-row items-center gap-1 mt-1">
-                  <View className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                  <Text className="text-xs font-semibold" style={{ color: '#ea580c' }}>
+                  <View className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: activeColor }} />
+                  <Text className="text-xs font-semibold" style={{ color: activeColor }}>
                     Сейчас
                   </Text>
                 </View>
@@ -248,6 +250,8 @@ export default function Orders() {
   const { closeGlobalModal, openGlobalModal } = useGlobalModalStore();
   const { addItem, setActiveRestaurant, clearCart } = useCartStore();
   const { colors, isDark } = useTheme();
+  const activeColor = isDark ? '#38bdf8' : '#ea580c';
+  const activeBg = isDark ? '#0c1f2e' : '#fff7ed';
   const [activeTab, setActiveTab] = useState('all');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
 
@@ -314,11 +318,11 @@ export default function Orders() {
                 {tab.key === 'active' && activeCount > 0 && (
                   <View
                     className="w-5 h-5 rounded-full items-center justify-center"
-                    style={{ backgroundColor: activeTab === 'active' ? '#ea580c' : (isDark ? '#2d2416' : '#fff7ed') }}
+                    style={{ backgroundColor: activeTab === 'active' ? activeColor : activeBg }}
                   >
                     <Text
                       className="text-[10px] font-bold"
-                      style={{ color: activeTab === 'active' ? '#fff' : '#ea580c' }}
+                      style={{ color: activeTab === 'active' ? '#fff' : activeColor }}
                     >
                       {activeCount}
                     </Text>
@@ -343,11 +347,11 @@ export default function Orders() {
                 activeOpacity={0.7}
                 onPress={() => isActive && onToggleExpand(order.id)}
                 className={`mx-4 bg-white dark:bg-dark-surface rounded-2xl overflow-hidden border ${index === 0 ? 'mt-4' : 'mt-3'}`}
-                style={{ borderColor: isActive ? '#fdba74' : (isDark ? colors.border : '#e7e5e4') }}
+                style={{ borderColor: isActive ? (isDark ? '#1e3a5f' : '#fdba74') : (isDark ? colors.border : '#e7e5e4') }}
               >
-                {/* Оранжевый верхний акцент для активных */}
+                {/* Верхний акцент для активных */}
                 {isActive && (
-                  <View className="h-1" style={{ backgroundColor: '#ea580c' }} />
+                  <View className="h-1" style={{ backgroundColor: activeColor }} />
                 )}
 
                 <View className="p-4">
@@ -356,11 +360,11 @@ export default function Orders() {
                     <View className="flex-row items-center gap-3">
                       <View
                         className="w-10 h-10 rounded-full items-center justify-center"
-                        style={{ backgroundColor: isActive ? (isDark ? '#2d2416' : '#fff7ed') : (isDark ? colors.elevated : '#f5f5f4') }}
+                        style={{ backgroundColor: isActive ? activeBg : (isDark ? colors.elevated : '#f5f5f4') }}
                       >
                         <Text
                           className="font-bold text-xs"
-                          style={{ color: isActive ? '#ea580c' : (isDark ? colors.textMuted : '#78716c') }}
+                          style={{ color: isActive ? activeColor : (isDark ? colors.textMuted : '#78716c') }}
                         >
                           {order.image}
                         </Text>
@@ -373,7 +377,7 @@ export default function Orders() {
 
                     <View className="flex-row items-center gap-2">
                       <View className="px-3 py-1 rounded-full" style={{ backgroundColor: isDark ? status.bgDark : status.bgLight }}>
-                        <Text className="text-xs font-bold" style={{ color: status.color }}>
+                        <Text className="text-xs font-bold" style={{ color: isDark ? status.colorDark : status.colorLight }}>
                           {status.label}
                         </Text>
                       </View>
@@ -390,9 +394,9 @@ export default function Orders() {
 
                   {/* Время доставки для активных */}
                   {isActive && order.estimatedTime && (
-                    <View className="flex-row items-center gap-2 mb-3 px-3 py-2.5 rounded-xl" style={{ backgroundColor: isDark ? '#2d2416' : '#fff7ed' }}>
-                      <Icon set="feather" name="clock" size={16} color="#ea580c" />
-                      <Text className="text-sm font-bold" style={{ color: '#ea580c' }}>
+                    <View className="flex-row items-center gap-2 mb-3 px-3 py-2.5 rounded-xl" style={{ backgroundColor: activeBg }}>
+                      <Icon set="feather" name="clock" size={16} color={activeColor} />
+                      <Text className="text-sm font-bold" style={{ color: activeColor }}>
                         Ожидаемое время: {order.estimatedTime}
                       </Text>
                     </View>
@@ -411,8 +415,8 @@ export default function Orders() {
                       {/* Курьер */}
                       {order.courierName && (
                         <View className="flex-row items-center gap-3 p-3 rounded-xl mb-3" style={{ backgroundColor: isDark ? colors.elevated : '#f5f5f4' }}>
-                          <View className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: isDark ? '#2d2416' : '#fed7aa' }}>
-                            <Icon set="feather" name="user" size={16} color="#ea580c" />
+                          <View className="w-9 h-9 rounded-full items-center justify-center" style={{ backgroundColor: activeBg }}>
+                            <Icon set="feather" name="user" size={16} color={activeColor} />
                           </View>
                           <View className="flex-1">
                             <Text className="text-xs text-stone-400 dark:text-dark-muted">Курьер</Text>
@@ -421,9 +425,9 @@ export default function Orders() {
                           <TouchableOpacity
                             activeOpacity={0.7}
                             className="w-9 h-9 rounded-full items-center justify-center"
-                            style={{ backgroundColor: isDark ? '#2d2416' : '#fed7aa' }}
+                            style={{ backgroundColor: activeBg }}
                           >
-                            <Icon set="feather" name="phone" size={16} color="#ea580c" />
+                            <Icon set="feather" name="phone" size={16} color={activeColor} />
                           </TouchableOpacity>
                         </View>
                       )}
@@ -473,10 +477,10 @@ export default function Orders() {
                         activeOpacity={0.7}
                         onPress={() => onToggleExpand(order.id)}
                         className="px-4 py-2 rounded-full flex-row items-center gap-1.5"
-                        style={{ backgroundColor: isDark ? '#2d2416' : '#fff7ed' }}
+                        style={{ backgroundColor: activeBg }}
                       >
-                        <Icon set="feather" name="map-pin" size={14} color="#ea580c" />
-                        <Text className="text-sm font-bold" style={{ color: '#ea580c' }}>Отследить</Text>
+                        <Icon set="feather" name="map-pin" size={14} color={activeColor} />
+                        <Text className="text-sm font-bold" style={{ color: activeColor }}>Отследить</Text>
                       </TouchableOpacity>
                     )}
                   </View>

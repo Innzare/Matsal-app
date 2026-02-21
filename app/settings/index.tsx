@@ -64,7 +64,7 @@ export default function Settings() {
             <View className="flex-row items-center gap-3 mb-4">
               <View
                 className="w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.border }}
+                style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
               >
                 <Icon set="feather" name="moon" size={20} color={colors.accent} />
               </View>
@@ -111,7 +111,7 @@ export default function Settings() {
             <View className="flex-row items-center gap-3 flex-1">
               <View
                 className="w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.border }}
+                style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
               >
                 <Icon set="ion" name="notifications-outline" size={22} color={colors.accent} />
               </View>
@@ -132,7 +132,7 @@ export default function Settings() {
             <View className="flex-row items-center gap-3 flex-1">
               <View
                 className="w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.border }}
+                style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
               >
                 <Icon set="feather" name="volume-2" size={20} color={colors.accent} />
               </View>
@@ -157,7 +157,7 @@ export default function Settings() {
             <View className="flex-row items-center gap-3 flex-1">
               <View
                 className="w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.border }}
+                style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
               >
                 <Icon set="feather" name="map-pin" size={20} color={colors.accent} />
               </View>
@@ -181,7 +181,7 @@ export default function Settings() {
             <View className="flex-row items-center gap-3">
               <View
                 className="w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.border }}
+                style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
               >
                 <Icon set="feather" name="globe" size={20} color={colors.accent} />
               </View>
@@ -197,7 +197,7 @@ export default function Settings() {
             <View className="flex-row items-center gap-3">
               <View
                 className="w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.border }}
+                style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
               >
                 <Icon set="feather" name="trash-2" size={20} color={colors.accent} />
               </View>

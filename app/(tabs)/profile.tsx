@@ -160,9 +160,9 @@ export default function Favourites() {
               >
                 <View
                   className="w-10 h-10 rounded-full items-center justify-center"
-                  style={{ backgroundColor: colors.border }}
+                  style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
                 >
-                  <Icon set={item.iconSet} name={item.iconName} size={20} color={colors.accent} />
+                  <Icon set={item.iconSet} name={item.iconName} size={18} color={colors.accent} />
                   {item.text === 'Заказы' && activeOrdersCount > 0 && (
                     <View className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-orange-500 items-center justify-center px-1">
                       <Text className="text-white text-[10px] font-bold">{activeOrdersCount}</Text>
@@ -184,9 +184,9 @@ export default function Favourites() {
               <View className="flex-row items-center gap-3">
                 <View
                   className="w-10 h-10 rounded-full items-center justify-center"
-                  style={{ backgroundColor: colors.border }}
+                  style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
                 >
-                  <Icon set="fontAwesome" name="credit-card" size={18} color={colors.accent} />
+                  <Icon set="fontAwesome" name="credit-card" size={15} color={colors.accent} />
                 </View>
                 <Text className="font-bold text-stone-700 dark:text-dark-text">Способ оплаты</Text>
               </View>
@@ -201,9 +201,9 @@ export default function Favourites() {
               <View className="flex-row items-center gap-3">
                 <View
                   className="w-10 h-10 rounded-full items-center justify-center"
-                  style={{ backgroundColor: colors.border }}
+                  style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
                 >
-                  <Icon set="ion" name="notifications-outline" size={22} color={colors.accent} />
+                  <Icon set="ion" name="notifications-outline" size={20} color={colors.accent} />
                   {unreadCount > 0 && (
                     <View className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 border-[1.5px] border-white dark:border-dark-surface" />
                   )}
@@ -228,9 +228,9 @@ export default function Favourites() {
               <View className="flex-row items-center gap-3">
                 <View
                   className="w-10 h-10 rounded-full items-center justify-center"
-                  style={{ backgroundColor: colors.border }}
+                  style={{ backgroundColor: isDark ? colors.border : colors.itemCountBg }}
                 >
-                  <Icon set="feather" name="settings" size={20} color={colors.accent} />
+                  <Icon set="feather" name="settings" size={18} color={colors.accent} />
                 </View>
                 <Text className="font-bold text-stone-700 dark:text-dark-text">Настройки</Text>
               </View>

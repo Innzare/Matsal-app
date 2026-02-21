@@ -203,6 +203,7 @@ const SECTIONS = [
 ];
 
 function ProductPreviewCard({ product }: { product: GroceryProduct }) {
+  const { colors } = useTheme();
   return (
     <View
       className="bg-white dark:bg-dark-surface rounded-xl border border-stone-200 dark:border-dark-border overflow-hidden"
@@ -210,10 +211,11 @@ function ProductPreviewCard({ product }: { product: GroceryProduct }) {
     >
       <Image
         source={{ uri: product.image }}
-        style={{ width: '100%', height: 110 }}
-        contentFit="cover"
+        style={{ width: '100%', height: 110, backgroundColor: colors.elevated }}
+        contentFit="contain"
         cachePolicy="memory-disk"
       />
+
       <View className="p-2.5">
         <Text className="font-bold text-sm text-stone-800 dark:text-dark-text">{product.price} ₽</Text>
         <Text className="text-xs text-stone-600 dark:text-dark-muted mt-0.5" numberOfLines={2}>
@@ -312,12 +314,7 @@ export default function Groceries() {
   };
 
   const onAddressPress = () => {
-    openGlobalBottomSheet({
-      content: <Addresses />,
-      snaps: ['90%'],
-      isBackgroundScalable: true,
-      isIndicatorVisible: false
-    });
+    openGlobalModal(GLOBAL_MODAL_CONTENT.ADDRESSES, true, 'pageSheet');
   };
 
   const onCategoryPress = (id: number) => {
